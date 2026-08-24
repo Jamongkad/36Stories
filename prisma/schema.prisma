@@ -1,0 +1,15 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  message   String
+  source    String
+  createdAt DateTime @default(now())
+}
