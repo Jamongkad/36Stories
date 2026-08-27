@@ -12,6 +12,7 @@ npm install
 docker compose up -d
 npm run db:migrate
 npm run db:generate
+npm run db:seed
 npm run dev
 ```
 
@@ -40,9 +41,10 @@ docker compose down -v
 docker compose up -d
 npm run db:migrate
 npm run db:generate
+npm run db:seed
 ```
 
-`prisma/migrations` contains the reproducible SQL history. PostgreSQL's `_prisma_migrations` table records which migrations have been applied. Prisma 7 does not implicitly generate the client during `prisma migrate dev`, so client generation remains an explicit step.
+`prisma/migrations` contains the reproducible SQL history. PostgreSQL's `_prisma_migrations` table records which migrations have been applied. Prisma 7 does not implicitly generate the client or run seeds during `prisma migrate dev`, so both remain explicit steps. The seed is idempotent and creates the `36stories-demo` organization, its `localhost` site, and five sample feedback records.
 
 ## Project shape
 
@@ -58,5 +60,6 @@ Unlike a circa-2022 client-rendered React application, App Router components are
 - `npm run lint` — run ESLint
 - `npm run db:generate` — generate Prisma Client into `generated/prisma`
 - `npm run db:migrate` — create/apply development migrations
+- `npm run db:seed` — create or refresh the local demo organization and site
 - `npm run db:status` — show applied and pending migrations
 - `npm run db:studio` — inspect data in Prisma Studio

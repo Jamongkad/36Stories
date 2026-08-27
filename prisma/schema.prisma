@@ -7,9 +7,122 @@ datasource db {
   provider = "postgresql"
 }
 
-model Feedback {
-  id        Int      @id @default(autoincrement())
-  message   String
-  source    String
+enum FeedbackStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+enum FeedbackPermission {
+  PRIVATE
+  PUBLIC
+}
+
+enum WidgetType {
+  COLLECTION
+  DISPLAY
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  sites     Site[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  organizationId String
+  email          String
+  name           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, email])
+}
+
+model Site {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  domain         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contacts       Contact[]
+  categories     Category[]
+  feedback       Feedback[]
+  widgets        Widget[]
+
+  @@index([organizationId])
+}
+
+model Contact {
+  id        String     @id @default(cuid())
+  siteId    String
+  email     String
+  firstName String
+  lastName  String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  site      Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  feedback  Feedback[]
+
+  @@index([siteId, email])
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  siteId    String
+  name      String
+  slug      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  site      Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  feedback  Feedback[]
+
+  @@unique([siteId, slug])
+}
+
+model Feedback {
+  id          String             @id @default(cuid())
+  siteId      String
+  contactId   String?
+  categoryId  String?
+  title       String?
+  message     String
+  rating      Int?
+  status      FeedbackStatus     @default(NEW)
+  permission  FeedbackPermission @default(PRIVATE)
+  isPublished Boolean            @default(false)
+  isFeatured  Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  site        Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  contact     Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  category    Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([categoryId])
+  @@index([siteId, status, createdAt])
+  @@index([siteId, isPublished, createdAt])
+}
+
+model Widget {
+  id        String     @id @default(cuid())
+  siteId    String
+  type      WidgetType
+  name      String
+  publicKey String     @unique
+  config    Json
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  site      Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, type, isActive])
 }

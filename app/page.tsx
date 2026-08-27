@@ -1,80 +1,79 @@
-import { connection } from "next/server";
+import {
+  Box,
+  Button,
+  Chip,
+  Container,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { createFeedback } from "@/app/actions";
-import { prisma } from "@/lib/prisma";
 
-export default async function Home() {
-  await connection();
-
-  const feedback = await prisma.feedback.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-
+export default function Home() {
   return (
-    <main>
-      <section className="hero">
-        <p className="eyebrow">36Stories foundation</p>
-        <h1>Feedback, persisted.</h1>
-        <p className="lede">
-          A small end-to-end slice: submit feedback here and it is stored in
-          PostgreSQL.
-        </p>
-      </section>
+    <Container maxWidth="md" sx={{ py: { xs: 6, md: 10 } }}>
+      <Stack spacing={5}>
+        <Box>
+          <Chip label="36Stories foundation" color="primary" size="small" />
+          <Typography
+            component="h1"
+            variant="h1"
+            sx={{ mt: 2, fontSize: { xs: "3.25rem", md: "5rem" }, lineHeight: 0.95 }}
+          >
+            Feedback, persisted.
+          </Typography>
+          <Typography
+            color="text.secondary"
+            sx={{ mt: 2, maxWidth: 600, fontSize: "1.1rem", lineHeight: 1.65 }}
+          >
+            Capture qualitative feedback now. Connect it to customer context
+            and business outcomes as 36Stories grows.
+          </Typography>
+        </Box>
 
-      <section className="panel" aria-labelledby="new-feedback-heading">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">New entry</p>
-            <h2 id="new-feedback-heading">Capture feedback</h2>
-          </div>
-        </div>
+        <Paper variant="outlined" sx={{ p: { xs: 3, md: 5 }, borderRadius: 3 }}>
+          <Stack spacing={1} sx={{ mb: 4 }}>
+            <Typography color="primary" variant="overline" sx={{ fontWeight: 800 }}>
+              New entry
+            </Typography>
+            <Typography component="h2" variant="h4">
+              Capture feedback
+            </Typography>
+          </Stack>
 
-        <form action={createFeedback}>
-          <label htmlFor="source">Source</label>
-          <input id="source" name="source" defaultValue="widget" required />
-
-          <label htmlFor="message">Message</label>
-          <textarea
-            id="message"
-            name="message"
-            rows={4}
-            defaultValue="The feedback widget is clear and easy to use."
-            required
-          />
-
-          <button type="submit">Save feedback</button>
-        </form>
-      </section>
-
-      <section className="panel" aria-labelledby="stored-feedback-heading">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">PostgreSQL</p>
-            <h2 id="stored-feedback-heading">Stored feedback</h2>
-          </div>
-          <span className="count">{feedback.length}</span>
-        </div>
-
-        {feedback.length === 0 ? (
-          <p className="empty-state">No feedback yet. Add the first entry above.</p>
-        ) : (
-          <ul className="feedback-list">
-            {feedback.map((item) => (
-              <li key={item.id}>
-                <div className="feedback-meta">
-                  <span>{item.source}</span>
-                  <time dateTime={item.createdAt.toISOString()}>
-                    {item.createdAt.toLocaleString("en-US", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </time>
-                </div>
-                <p>{item.message}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </main>
+          <form action={createFeedback}>
+            <Stack spacing={3}>
+              <TextField
+                id="source"
+                name="source"
+                label="Source"
+                defaultValue="widget"
+                required
+                fullWidth
+              />
+              <TextField
+                id="message"
+                name="message"
+                label="Message"
+                defaultValue="The feedback widget is clear and easy to use."
+                required
+                fullWidth
+                multiline
+                minRows={4}
+              />
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button type="submit" variant="contained" size="large">
+                  Save feedback
+                </Button>
+                <Button href="/dashboard" variant="outlined" size="large">
+                  View dashboard
+                </Button>
+              </Stack>
+            </Stack>
+          </form>
+        </Paper>
+      </Stack>
+    </Container>
   );
 }
