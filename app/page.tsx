@@ -8,11 +8,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import AppHeader from "@/app/_components/AppHeader";
 import { createFeedback } from "@/app/actions";
 
 export default function Home() {
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 6, md: 10 } }}>
+    <>
+      <AppHeader />
+      <Container component="main" maxWidth="md" sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={5}>
         <Box>
           <Chip label="36Stories foundation" color="primary" size="small" />
@@ -74,6 +77,7 @@ export default function Home() {
           </form>
         </Paper>
       </Stack>
-    </Container>
+      </Container>
+    </>
   );
 }
