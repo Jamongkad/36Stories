@@ -4,6 +4,7 @@ import {
   FeedbackPermission,
   FeedbackStatus,
   PrismaClient,
+  WidgetType,
 } from "../generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
@@ -117,6 +118,89 @@ async function main() {
       }),
     ),
   );
+
+  const collectionWidget = await prisma.widget.upsert({
+    where: { publicKey: "collection_36stories_demo" },
+    update: {
+      siteId: site.id,
+      type: WidgetType.COLLECTION,
+      name: "Follower stories",
+      isActive: true,
+      config: {
+        version: 2,
+        headline: "Leave me a review",
+        instructions: "Tell us about your experience.",
+        successMessage: "Thanks for sharing your story!",
+        fields: {
+          fullName: { show: true, required: false },
+          email: { show: false, required: false },
+          socialProfile: { show: true, required: false },
+        },
+      },
+    },
+    create: {
+      siteId: site.id,
+      type: WidgetType.COLLECTION,
+      name: "Follower stories",
+      publicKey: "collection_36stories_demo",
+      config: {
+        version: 2,
+        headline: "Leave me a review",
+        instructions: "Tell us about your experience.",
+        successMessage: "Thanks for sharing your story!",
+        fields: {
+          fullName: { show: true, required: false },
+          email: { show: false, required: false },
+          socialProfile: { show: true, required: false },
+        },
+      },
+    },
+  });
+
+  const displayConfig = {
+    version: 1,
+    displayName: "36Stories Demo",
+    bio: "Creator stories, recommendations, and honest feedback in one place.",
+    links: [
+      {
+        id: "demo-youtube",
+        label: "Watch on YouTube",
+        url: "https://www.youtube.com/",
+      },
+      {
+        id: "demo-amazon",
+        label: "My Amazon favorites",
+        url: "https://www.amazon.com/",
+      },
+    ],
+    selectedCollectionWidgetId: collectionWidget.id,
+  };
+  const existingDisplayWidget = await prisma.widget.findFirst({
+    where: { siteId: site.id, type: WidgetType.DISPLAY },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+
+  if (existingDisplayWidget) {
+    await prisma.widget.update({
+      where: { id: existingDisplayWidget.id },
+      data: {
+        name: "Testimonial Page",
+        config: displayConfig,
+        isActive: true,
+      },
+    });
+  } else {
+    await prisma.widget.create({
+      data: {
+        siteId: site.id,
+        type: WidgetType.DISPLAY,
+        name: "Testimonial Page",
+        publicKey: "display_36stories_demo",
+        config: displayConfig,
+      },
+    });
+  }
 }
 
 main()
