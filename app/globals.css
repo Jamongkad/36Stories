@@ -1,7 +1,8 @@
-* {
-  box-sizing: border-box;
-}
-
+/*
+ * MUI's CssBaseline owns box sizing. Do not add a universal `box-sizing`
+ * reset here: unlayered global CSS outranks MUI's `mui` layer and collapses
+ * outlined inputs by overriding their required `content-box` sizing.
+ */
 html,
 body {
   min-height: 100%;

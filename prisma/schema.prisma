@@ -28,6 +28,37 @@ enum SocialPlatform {
   TIKTOK
 }
 
+enum OfferKind {
+  PRODUCT
+  SERVICE
+}
+
+enum OfferMode {
+  LIVE
+  COMING_SOON
+  IDEA
+}
+
+enum OfferDestinationType {
+  STORE
+  AFFILIATE
+  BOOKING
+  OTHER
+}
+
+enum OfferCtaType {
+  OUTBOUND
+  WAITLIST
+  INTEREST
+}
+
+enum OfferEventType {
+  VIEW
+  OUTBOUND_CLICK
+  INTEREST
+  WAITLIST_SIGNUP
+}
+
 model Organization {
   id        String   @id @default(cuid())
   name      String
@@ -62,23 +93,25 @@ model Site {
   categories     Category[]
   feedback       Feedback[]
   widgets        Widget[]
+  offers         Offer[]
 
   @@index([organizationId])
 }
 
 model Contact {
-  id        String     @id @default(cuid())
-  siteId    String
-  email     String?
-  firstName String?
-  lastName  String?
-  fullName  String?
+  id             String          @id @default(cuid())
+  siteId         String
+  email          String?
+  firstName      String?
+  lastName       String?
+  fullName       String?
   socialPlatform SocialPlatform?
-  socialHandle String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  site      Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  feedback  Feedback[]
+  socialHandle   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  site           Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  feedback       Feedback[]
+  offerSignups   OfferSignup[]
 
   @@index([siteId, email])
 }
@@ -113,11 +146,93 @@ model Feedback {
   site        Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
   contact     Contact?           @relation(fields: [contactId], references: [id], onDelete: SetNull)
   category    Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  offer       Offer?             @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  offerId     String?
 
   @@index([contactId])
   @@index([categoryId])
+  @@index([offerId])
+  @@index([offerId, isPublished, createdAt])
   @@index([siteId, status, createdAt])
   @@index([siteId, isPublished, createdAt])
+}
+
+model Offer {
+  id              String                @id @default(cuid())
+  siteId          String
+  kind            OfferKind
+  mode            OfferMode
+  title           String
+  description     String?
+  imageUrl        String?
+  priceLabel      String?
+  launchAt        DateTime?
+  destinationUrl  String?
+  destinationType OfferDestinationType?
+  ctaType         OfferCtaType
+  ctaLabel        String
+  feedbackPrompt  String?
+  isAffiliate     Boolean               @default(false)
+  disclosureText  String?
+  isPublished     Boolean               @default(false)
+  isFeatured      Boolean               @default(false)
+  sortOrder       Int                   @default(0)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  site            Site                  @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  feedback        Feedback[]
+  signups         OfferSignup[]
+  events          OfferEvent[]
+  socialPostRefs  SocialPostReference[]
+
+  @@index([siteId, isPublished, sortOrder])
+  @@index([siteId, mode, isPublished])
+}
+
+model OfferSignup {
+  id        String    @id @default(cuid())
+  offerId   String
+  contactId String?
+  email     String
+  consentAt DateTime?
+  source    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  offer     Offer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  contact   Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  @@unique([offerId, email])
+  @@index([offerId, createdAt])
+  @@index([contactId])
+}
+
+model OfferEvent {
+  id        String         @id @default(cuid())
+  offerId   String
+  type      OfferEventType
+  sessionId String?
+  source    String?
+  referrer  String?
+  createdAt DateTime       @default(now())
+  offer     Offer          @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@index([offerId, type, createdAt])
+  @@index([offerId, sessionId])
+}
+
+model SocialPostReference {
+  id        String         @id @default(cuid())
+  offerId   String
+  platform  SocialPlatform
+  url       String
+  label     String?
+  postedAt  DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  offer     Offer          @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, url])
+  @@index([offerId, platform])
 }
 
 model Widget {

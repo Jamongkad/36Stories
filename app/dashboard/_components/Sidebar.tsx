@@ -6,9 +6,8 @@ const Sidebar = () => {
 	return (
 		<nav aria-label="Dashboard">
 			<Link href="/dashboard">Overview</Link>
-			<Link href="/dashboard/inbox">Inbox</Link>
-			<Link href="/dashboard/forms">Collection Forms</Link>
-			<Link href="/dashboard/testimonial-page">Testimonial Page</Link>
+			<Link href="/dashboard/offers">Offers</Link>
+			<Link href="/dashboard/analytics">Analytics</Link>
 		</nav>
 	)
 }
