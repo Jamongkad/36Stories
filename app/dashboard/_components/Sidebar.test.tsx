@@ -3,26 +3,24 @@ import { describe, expect, it } from "vitest";
 
 import Sidebar from "./Sidebar";
 
-describe('Sidebar Component', () => {
-	it('renders an Overview link', () => {
+describe("Sidebar Component", () => {
+	it("renders the focused offer navigation", () => {
 		render(<Sidebar />);
 
 		expect(
-			screen.getByRole('link', { name: 'Overview' })
-		).toHaveAttribute('href', '/dashboard');
+			screen.getByRole("link", { name: "Overview" })
+		).toHaveAttribute("href", "/dashboard");
 
 		expect(
-			screen.getByRole('link', { name: 'Inbox' })
-		).toHaveAttribute('href', '/dashboard/inbox');
+			screen.getByRole("link", { name: "Offers" })
+		).toHaveAttribute("href", "/dashboard/offers");
 
 		expect(
-			screen.getByRole('link', { name: 'Collection Forms' })
-		).toHaveAttribute('href', '/dashboard/forms');
+			screen.getByRole("link", { name: "Analytics" })
+		).toHaveAttribute("href", "/dashboard/analytics");
 
-		expect(
-			screen.getByRole('link', { name: 'Testimonial Page' })
-		).toHaveAttribute('href', '/dashboard/testimonial-page');
-
-
+		expect(screen.queryByRole("link", { name: "Inbox" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("link", { name: "Collection Forms" })).not.toBeInTheDocument();
+		expect(screen.queryByRole("link", { name: "Testimonial Page" })).not.toBeInTheDocument();
 	});	
 });
