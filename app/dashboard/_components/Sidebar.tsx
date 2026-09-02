@@ -78,30 +78,6 @@ const Sidebar = () => {
 					</ButtonBase>
 				);
 			})}
-
-			<ButtonBase
-				component={Link}
-				href="/dashboard/offers/new"
-				sx={{
-					bgcolor: "primary.main",
-					borderRadius: 999,
-					color: "primary.contrastText",
-					gridColumn: { xs: "1 / -1" },
-					mt: { xs: 0.25, md: "auto" },
-					minHeight: 46,
-					px: 2,
-					textDecoration: "none",
-					"&:hover": { bgcolor: "primary.dark" },
-					"&:focus-visible": {
-						outline: "3px solid rgba(37, 99, 235, 0.24)",
-						outlineOffset: 2,
-					},
-				}}
-			>
-				<Typography component="span" sx={{ fontSize: "0.9rem", fontWeight: 750 }}>
-					+ Create offer
-				</Typography>
-			</ButtonBase>
 		</Box>
 	)
 }
