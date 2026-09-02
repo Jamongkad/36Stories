@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { offerKindPolicy, offerModePolicy } from "@/lib/offers/policy";
 import { DashboardPageHeader } from "../_components/DashboardPrimitives";
-import { setOfferPublished } from "./actions";
+import OfferActions from "./_components/OfferActions";
 
 const DashboardOffersPage = async () => {
   await connection();
@@ -98,18 +98,11 @@ const DashboardOffersPage = async () => {
                     {offer.ctaLabel} · {offer._count.events} events · {offer._count.signups} signups
                   </Typography>
                 </Box>
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-                  <Box component="form" action={setOfferPublished}>
-                    <input name="offerId" type="hidden" value={offer.id} />
-                    <input name="isPublished" type="hidden" value={offer.isPublished ? "false" : "true"} />
-                    <Button fullWidth type="submit" variant={offer.isPublished ? "outlined" : "contained"}>
-                      {offer.isPublished ? "Unpublish" : "Publish"}
-                    </Button>
-                  </Box>
-                  <Button component="a" href={`/dashboard/analytics#offer-${offer.id}`} variant="outlined">
-                    View signal
-                  </Button>
-                </Stack>
+                <OfferActions
+                  isPublished={offer.isPublished}
+                  offerId={offer.id}
+                  offerTitle={offer.title}
+                />
               </Stack>
             </Paper>
           ))}

@@ -20,7 +20,6 @@ import {
 } from "@mui/material";
 import {
   initialOfferFormActionState,
-  type OfferFormActionState,
 } from "@/lib/offerForm";
 import {
   defaultOfferMode,
@@ -32,17 +31,11 @@ import {
   offerModes,
   type OfferMode,
 } from "@/lib/offers/policy";
+import { createOffer } from "../actions";
 
-type OfferEditorProps = {
-  action: (
-    state: OfferFormActionState,
-    formData: FormData,
-  ) => Promise<OfferFormActionState>;
-};
-
-const OfferEditor = ({ action }: OfferEditorProps) => {
+const OfferEditor = () => {
   const router = useRouter();
-  const [state, formAction, isPending] = useActionState(action, initialOfferFormActionState);
+  const [state, formAction, isPending] = useActionState(createOffer, initialOfferFormActionState);
   const [mode, setMode] = useState<OfferMode>(defaultOfferMode);
   const [isAffiliate, setIsAffiliate] = useState(false);
   const modePolicy = offerModePolicy[mode];
@@ -121,7 +114,7 @@ const OfferEditor = ({ action }: OfferEditorProps) => {
               >
                 {offerModes.map((offerMode) => (
                   <MenuItem key={offerMode} value={offerMode}>
-                    {offerModePolicy[offerMode].editorLabel}
+                    {offerModePolicy[offerMode].editorLabel} 
                   </MenuItem>
                 ))}
               </Select>

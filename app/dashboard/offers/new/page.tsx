@@ -1,7 +1,6 @@
 import { Stack } from "@mui/material";
 import { DashboardPageHeader } from "../../_components/DashboardPrimitives";
 import OfferEditor from "./_components/OfferEditor";
-import { createOffer } from "./actions";
 
 const NewOfferPage = () => (
   <Stack spacing={4} sx={{ maxWidth: 760 }}>
@@ -10,7 +9,7 @@ const NewOfferPage = () => (
       eyebrow="New signal test"
       title="Create an offer"
     />
-    <OfferEditor action={createOffer} />
+    <OfferEditor />
   </Stack>
 );
 
