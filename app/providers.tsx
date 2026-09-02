@@ -8,34 +8,48 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#246b4b",
-      dark: "#185139",
-      light: "#dcece3",
+      main: "#2563eb",
+      dark: "#1d4ed8",
+      light: "#dbeafe",
+      contrastText: "#ffffff",
     },
     background: {
-      default: "#f5f3ed",
-      paper: "#fffef9",
+      default: "#f8fafc",
+      paper: "#ffffff",
     },
     text: {
-      primary: "#17221b",
-      secondary: "#647068",
+      primary: "#111827",
+      secondary: "#667085",
     },
-    divider: "#d9ddd4",
+    divider: "#e4e7ec",
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 14,
   },
   typography: {
-    fontFamily: "Arial, Helvetica, sans-serif",
+    fontFamily:
+      'Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     h1: {
-      fontFamily: 'Georgia, "Times New Roman", serif',
-      fontWeight: 500,
-      letterSpacing: "-0.045em",
+      fontWeight: 750,
+      letterSpacing: "-0.035em",
+      lineHeight: 1.08,
     },
     h2: {
-      fontFamily: 'Georgia, "Times New Roman", serif',
-      fontWeight: 500,
-      letterSpacing: "-0.025em",
+      fontWeight: 750,
+      letterSpacing: "-0.03em",
+      lineHeight: 1.12,
+    },
+    h3: {
+      fontWeight: 750,
+      letterSpacing: "-0.02em",
+    },
+    h4: {
+      fontWeight: 750,
+      letterSpacing: "-0.02em",
+    },
+    h5: {
+      fontWeight: 750,
+      letterSpacing: "-0.015em",
     },
     button: {
       fontWeight: 700,
@@ -50,6 +64,32 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 999,
+          minHeight: 44,
+          paddingLeft: 20,
+          paddingRight: 20,
+          "&:focus-visible": {
+            outline: "3px solid rgba(37, 99, 235, 0.24)",
+            outlineOffset: 2,
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 999,
+          fontWeight: 700,
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#ffffff",
+          borderRadius: 14,
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderWidth: 2,
+          },
         },
       },
     },
@@ -57,6 +97,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: "none",
+        },
+        outlined: {
+          borderColor: "#e4e7ec",
         },
       },
     },

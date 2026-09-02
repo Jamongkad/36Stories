@@ -1,7 +1,11 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import Sidebar from "./Sidebar";
+
+vi.mock("next/navigation", () => ({
+	usePathname: () => "/dashboard/offers/new",
+}));
 
 describe("Sidebar Component", () => {
 	it("renders the focused offer navigation", () => {
@@ -14,6 +18,9 @@ describe("Sidebar Component", () => {
 		expect(
 			screen.getByRole("link", { name: "Offers" })
 		).toHaveAttribute("href", "/dashboard/offers");
+		expect(
+			screen.getByRole("link", { name: "Offers" })
+		).toHaveAttribute("aria-current", "page");
 
 		expect(
 			screen.getByRole("link", { name: "Analytics" })
@@ -22,5 +29,9 @@ describe("Sidebar Component", () => {
 		expect(screen.queryByRole("link", { name: "Inbox" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link", { name: "Collection Forms" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link", { name: "Testimonial Page" })).not.toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "+ Create offer" })).toHaveAttribute(
+			"href",
+			"/dashboard/offers/new",
+		);
 	});	
 });

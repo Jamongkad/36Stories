@@ -9,42 +9,39 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <Box
         sx={{
           display: { xs: "block", md: "grid" },
-          gridTemplateColumns: { md: "240px minmax(0, 1fr)" },
+          gridTemplateColumns: { md: "252px minmax(0, 1fr)" },
+          minHeight: { md: "calc(100vh - 72px)" },
           minWidth: 0,
         }}
       >
         <Box
           component="aside"
           sx={{
-            borderBottom: { xs: 1, md: 0 },
-            borderRight: { md: 1 },
-            borderColor: "divider",
-            "& nav": {
-              display: "flex",
-              flexDirection: { xs: "row", md: "column" },
-              flexWrap: "wrap",
-              gap: 1,
-              p: 2,
+            bgcolor: "rgba(255, 255, 255, 0.76)",
+            boxShadow: {
+              xs: "0 1px 0 rgba(16, 24, 40, 0.05)",
+              md: "1px 0 0 rgba(16, 24, 40, 0.05)",
             },
-            "& a": {
-              display: "inline-flex",
-              minHeight: 44,
-              alignItems: "center",
-              borderRadius: 2,
-              px: 2,
-              color: "text.primary",
-              textDecoration: "none",
-              "&:hover": {
-                bgcolor: "action.hover",
-              },
+            borderRight: { md: 1 },
+            borderColor: { md: "rgba(228, 231, 236, 0.72)" },
+            "& nav": {
+              minHeight: { md: "calc(100vh - 72px)" },
             },
           }}
         >
           <Sidebar />
         </Box>
 
-        <Box component="main" sx={{ minWidth: 0 }}>
-          <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
+        <Box
+          component="main"
+          sx={{
+            backgroundColor: "#f8fafc",
+            backgroundImage: "radial-gradient(#dbe4f0 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            minWidth: 0,
+          }}
+        >
+          <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 4, md: 5 } }}>
             {children}
           </Container>
         </Box>

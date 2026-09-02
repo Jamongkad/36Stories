@@ -1,14 +1,35 @@
-import { AppBar, Container, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Chip, Toolbar, Typography } from "@mui/material";
 
 const AppHeader = () => (
   <AppBar
-    position="static"
+    position="sticky"
     color="transparent"
     elevation={0}
-    sx={{ borderBottom: 1, borderColor: "divider" }}
+    sx={{
+      backdropFilter: "blur(18px)",
+      bgcolor: "rgba(255, 255, 255, 0.88)",
+      boxShadow: "0 1px 0 rgba(16, 24, 40, 0.05)",
+    }}
   >
-    <Container maxWidth="lg">
-      <Toolbar disableGutters sx={{ gap: 1 }}>
+      <Toolbar sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 2, sm: 3 } }}>
+        <Box
+          aria-hidden="true"
+          sx={{
+            alignItems: "center",
+            bgcolor: "primary.main",
+            borderRadius: 2.5,
+            color: "primary.contrastText",
+            display: "flex",
+            fontSize: "0.78rem",
+            fontWeight: 800,
+            height: 36,
+            justifyContent: "center",
+            mr: 1.25,
+            width: 36,
+          }}
+        >
+          36
+        </Box>
         <Typography
           component="a"
           href="/dashboard"
@@ -18,8 +39,16 @@ const AppHeader = () => (
         >
           36Stories
         </Typography>
+        <Chip
+          label="Creator workspace"
+          size="small"
+          sx={{
+            bgcolor: "#eff6ff",
+            color: "#1d4ed8",
+            display: { xs: "none", sm: "inline-flex" },
+          }}
+        />
       </Toolbar>
-    </Container>
   </AppBar>
 );
 
