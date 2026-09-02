@@ -1,5 +1,9 @@
-import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { connection } from "next/server";
+import {
+  DashboardMetricCard,
+  DashboardPageHeader,
+} from "./_components/DashboardPrimitives";
 import { offerIntentEvents } from "@/lib/offers/policy";
 import { prisma } from "@/lib/prisma";
 
@@ -29,23 +33,23 @@ const DashboardPage = async () => {
     : 0;
 
   return (
-    <Stack spacing={4}>
-      <Box>
-        <Chip label={`${offers.length} offers`} color="primary" size="small" />
-        <Typography
-          component="h1"
-          variant="h2"
-          sx={{ mt: 2, fontSize: { xs: "2.75rem", md: "4rem" } }}
-        >
-          Overview
-        </Typography>
-        <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 680 }}>
-          Create offers, share your bio page, and learn what your audience is most likely to act on.
-        </Typography>
-      </Box>
+    <Stack spacing={{ xs: 4, md: 5 }}>
+      <DashboardPageHeader
+        description="Create offers, share your bio page, and learn what your audience is most likely to act on."
+        eyebrow="Welcome back"
+        title="Overview"
+      />
 
       {offers.length === 0 ? (
-        <Paper variant="outlined" sx={{ borderRadius: 4, p: { xs: 3, sm: 4 } }}>
+        <Paper
+          elevation={0}
+          sx={{
+            background: "linear-gradient(135deg, #eff6ff 0%, #ffffff 72%)",
+            border: "1px solid #dbeafe",
+            borderRadius: 4,
+            p: { xs: 3, sm: 4 },
+          }}
+        >
           <Typography component="h2" variant="h4">
             Create your first offer
           </Typography>
@@ -65,36 +69,51 @@ const DashboardPage = async () => {
               gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
             }}
           >
-            <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }}>
-              <Typography color="text.secondary" variant="body2" sx={{ fontWeight: 700 }}>
-                Published offers
-              </Typography>
-              <Typography sx={{ fontSize: "2rem", fontWeight: 800, mt: 0.5 }}>
-                {publishedOffers}
-              </Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }}>
-              <Typography color="text.secondary" variant="body2" sx={{ fontWeight: 700 }}>
-                Intent actions
-              </Typography>
-              <Typography sx={{ fontSize: "2rem", fontWeight: 800, mt: 0.5 }}>
-                {intentActions}
-              </Typography>
-            </Paper>
+            <DashboardMetricCard
+              explanation="Offers currently visible on your public bio page."
+              label="Published offers"
+              mark="P"
+              value={publishedOffers}
+            />
+            <DashboardMetricCard
+              explanation="Clicks, signups, and interest actions across your offers."
+              label="Intent actions"
+              mark="↗"
+              tone="violet"
+              value={intentActions}
+            />
           </Box>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-            <Button component="a" href="/dashboard/offers" variant="contained">
-              Manage offers
-            </Button>
-            <Button component="a" href="/dashboard/analytics" variant="outlined">
-              View analytics
-            </Button>
-            {site && (
-              <Button component="a" href={`/bio/${site.organization.slug}`} target="_blank" variant="outlined">
-                View bio page
+          <Paper
+            elevation={0}
+            sx={{
+              alignItems: { sm: "center" },
+              border: "1px solid #e4e7ec",
+              borderRadius: 3,
+              display: { sm: "flex" },
+              justifyContent: "space-between",
+              p: { xs: 2.5, sm: 3 },
+            }}
+          >
+            <Box sx={{ mb: { xs: 2, sm: 0 }, mr: { sm: 3 } }}>
+              <Typography sx={{ fontWeight: 800 }}>Ready for your next signal?</Typography>
+              <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
+                Keep your offers current, then check which one earns the strongest response.
+              </Typography>
+            </Box>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ flexShrink: 0 }}>
+              <Button component="a" href="/dashboard/offers" variant="contained">
+                Manage offers
               </Button>
-            )}
-          </Stack>
+              <Button component="a" href="/dashboard/analytics" variant="outlined">
+                View analytics
+              </Button>
+              {site && (
+                <Button component="a" href={`/bio/${site.organization.slug}`} target="_blank" variant="outlined">
+                  View bio page
+                </Button>
+              )}
+            </Stack>
+          </Paper>
         </>
       )}
     </Stack>

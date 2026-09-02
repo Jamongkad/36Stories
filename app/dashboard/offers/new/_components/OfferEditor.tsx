@@ -62,15 +62,42 @@ const OfferEditor = ({ action }: OfferEditorProps) => {
           </Alert>
         )}
 
-        <Paper variant="outlined" sx={{ borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid #e4e7ec",
+            borderRadius: 3,
+            boxShadow: "0 8px 24px rgba(16, 24, 40, 0.035)",
+            p: { xs: 2.5, sm: 3 },
+          }}
+        >
           <Stack spacing={2.5}>
-            <Box>
-              <Typography component="h2" variant="h5">
-                What are you testing?
-              </Typography>
-              <Typography color="text.secondary" sx={{ mt: 0.75 }}>
-                Start with the simplest description your audience will understand.
-              </Typography>
+            <Box sx={{ alignItems: "flex-start", display: "flex", gap: 1.5 }}>
+              <Box
+                aria-hidden="true"
+                sx={{
+                  alignItems: "center",
+                  bgcolor: "#dbeafe",
+                  borderRadius: 2,
+                  color: "primary.dark",
+                  display: "flex",
+                  flexShrink: 0,
+                  fontWeight: 800,
+                  height: 38,
+                  justifyContent: "center",
+                  width: 38,
+                }}
+              >
+                1
+              </Box>
+              <Box>
+                <Typography component="h2" variant="h5">
+                  What are you testing?
+                </Typography>
+                <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+                  Start with the simplest description your audience will understand.
+                </Typography>
+              </Box>
             </Box>
             <FormControl error={Boolean(state.fieldErrors?.kind)} fullWidth>
               <InputLabel id="offer-kind-label">Offer type</InputLabel>
@@ -138,15 +165,42 @@ const OfferEditor = ({ action }: OfferEditorProps) => {
           </Stack>
         </Paper>
 
-        <Paper variant="outlined" sx={{ borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
+        <Paper
+          elevation={0}
+          sx={{
+            border: "1px solid #e4e7ec",
+            borderRadius: 3,
+            boxShadow: "0 8px 24px rgba(16, 24, 40, 0.035)",
+            p: { xs: 2.5, sm: 3 },
+          }}
+        >
           <Stack spacing={2.5}>
-            <Box>
-              <Typography component="h2" variant="h5">
-                What should visitors do?
-              </Typography>
-              <Typography color="text.secondary" sx={{ mt: 0.75 }}>
-                36Stories uses this action as the offer’s primary intent signal.
-              </Typography>
+            <Box sx={{ alignItems: "flex-start", display: "flex", gap: 1.5 }}>
+              <Box
+                aria-hidden="true"
+                sx={{
+                  alignItems: "center",
+                  bgcolor: "#ede9fe",
+                  borderRadius: 2,
+                  color: "#6d28d9",
+                  display: "flex",
+                  flexShrink: 0,
+                  fontWeight: 800,
+                  height: 38,
+                  justifyContent: "center",
+                  width: 38,
+                }}
+              >
+                2
+              </Box>
+              <Box>
+                <Typography component="h2" variant="h5">
+                  What should visitors do?
+                </Typography>
+                <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+                  36Stories uses this action as the offer’s primary intent signal.
+                </Typography>
+              </Box>
             </Box>
 
             {modePolicy.requiresDestination && (
@@ -223,7 +277,10 @@ const OfferEditor = ({ action }: OfferEditorProps) => {
           </Stack>
         </Paper>
 
-        <Paper variant="outlined" sx={{ borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
+        <Paper
+          elevation={0}
+          sx={{ bgcolor: "#f8fbff", border: "1px solid #dbeafe", borderRadius: 3, p: { xs: 2.5, sm: 3 } }}
+        >
           <FormControlLabel
             control={<Checkbox name="isPublished" />}
             label="Publish this offer on my bio page now"

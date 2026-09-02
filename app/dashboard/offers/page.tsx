@@ -2,6 +2,7 @@ import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { offerKindPolicy, offerModePolicy } from "@/lib/offers/policy";
+import { DashboardPageHeader } from "../_components/DashboardPrimitives";
 import { setOfferPublished } from "./actions";
 
 const DashboardOffersPage = async () => {
@@ -35,26 +36,22 @@ const DashboardOffersPage = async () => {
 
   return (
     <Stack spacing={4}>
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ alignItems: { sm: "flex-end" }, justifyContent: "space-between" }}
-      >
-        <Box>
-          <Typography component="h1" variant="h2" sx={{ fontSize: { xs: "2.5rem", sm: "3.25rem" } }}>
-            Offers
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 680 }}>
-            Manage what your audience can discover, click, join, or show interest in.
-          </Typography>
-        </Box>
-        <Button component="a" href="/dashboard/offers/new" variant="contained">
-          Create offer
-        </Button>
-      </Stack>
+      <DashboardPageHeader
+        action={(
+          <Button component="a" href="/dashboard/offers/new" variant="contained">
+            Create offer
+          </Button>
+        )}
+        description="Manage what your audience can discover, click, join, or show interest in."
+        eyebrow="Your storefront"
+        title="Offers"
+      />
 
       {offers.length === 0 ? (
-        <Paper variant="outlined" sx={{ borderRadius: 3, p: 3, textAlign: "center" }}>
+        <Paper
+          elevation={0}
+          sx={{ border: "1px dashed #bfdbfe", borderRadius: 3, bgcolor: "#f8fbff", p: 4, textAlign: "center" }}
+        >
           <Typography sx={{ fontWeight: 800 }}>No offers yet</Typography>
           <Typography color="text.secondary" sx={{ mt: 1 }}>
             Start with something live, something coming soon, or an idea you want to test.
@@ -63,7 +60,22 @@ const DashboardOffersPage = async () => {
       ) : (
         <Stack spacing={2}>
           {offers.map((offer) => (
-            <Paper component="article" key={offer.id} variant="outlined" sx={{ borderRadius: 3, p: { xs: 2.5, sm: 3 } }}>
+            <Paper
+              component="article"
+              elevation={0}
+              key={offer.id}
+              sx={{
+                border: "1px solid #e4e7ec",
+                borderRadius: 3,
+                boxShadow: "0 8px 24px rgba(16, 24, 40, 0.035)",
+                p: { xs: 2.5, sm: 3 },
+                transition: "border-color 160ms ease, box-shadow 160ms ease",
+                "&:hover": {
+                  borderColor: "#bfdbfe",
+                  boxShadow: "0 12px 28px rgba(37, 99, 235, 0.07)",
+                },
+              }}
+            >
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={2}

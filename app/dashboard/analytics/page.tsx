@@ -9,6 +9,10 @@ import {
 } from "@/lib/offerAnalytics";
 import { offerKindPolicy } from "@/lib/offers/policy";
 import { prisma } from "@/lib/prisma";
+import {
+  DashboardMetricCard,
+  DashboardPageHeader,
+} from "../_components/DashboardPrimitives";
 
 const periodLabels: Record<AnalyticsPeriod, string> = {
   "7d": "Last 7 days",
@@ -38,28 +42,6 @@ const statusColor = (status: OfferAnalyticsSummary["status"]) => {
 
   return "warning" as const;
 };
-
-const MetricCard = ({
-  label,
-  value,
-  explanation,
-}: {
-  label: string;
-  value: string;
-  explanation: string;
-}) => (
-  <Paper variant="outlined" sx={{ borderRadius: 3, p: 2.5, minWidth: 0 }}>
-    <Typography color="text.secondary" variant="body2" sx={{ fontWeight: 700 }}>
-      {label}
-    </Typography>
-    <Typography sx={{ fontSize: "2rem", fontWeight: 800, mt: 0.5, overflowWrap: "anywhere" }}>
-      {value}
-    </Typography>
-    <Typography color="text.secondary" variant="body2" sx={{ mt: 0.75, lineHeight: 1.5 }}>
-      {explanation}
-    </Typography>
-  </Paper>
-);
 
 const DashboardAnalyticsPage = async ({
   searchParams,
@@ -113,38 +95,32 @@ const DashboardAnalyticsPage = async ({
 
   return (
     <Stack spacing={{ xs: 4, md: 5 }}>
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ alignItems: { sm: "flex-end" }, justifyContent: "space-between" }}
-      >
-        <Box>
-          <Typography component="h1" variant="h2" sx={{ fontSize: { xs: "2.5rem", sm: "3.25rem" } }}>
-            Analytics
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 680, lineHeight: 1.6 }}>
-            See which offers are earning real intent—not just likes or comments.
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-          {Object.entries(periodLabels).map(([value, label]) => (
-            <Button
-              component="a"
-              href={`/dashboard/analytics?period=${value}`}
-              key={value}
-              size="small"
-              variant={period === value ? "contained" : "outlined"}
-            >
-              {label}
-            </Button>
-          ))}
-        </Stack>
-      </Stack>
+      <DashboardPageHeader
+        action={(
+          <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
+            {Object.entries(periodLabels).map(([value, label]) => (
+              <Button
+                component="a"
+                href={`/dashboard/analytics?period=${value}`}
+                key={value}
+                size="small"
+                variant={period === value ? "contained" : "outlined"}
+              >
+                {label}
+              </Button>
+            ))}
+          </Stack>
+        )}
+        description="See which offers are earning real intent—not just likes or comments."
+        eyebrow="Audience intent"
+        title="Analytics"
+      />
 
       <Paper
         sx={{
-          bgcolor: "#173f31",
+          background: "linear-gradient(135deg, #1d4ed8 0%, #2563eb 58%, #4f46e5 100%)",
           borderRadius: 4,
+          boxShadow: "0 18px 42px rgba(37, 99, 235, 0.2)",
           color: "white",
           p: { xs: 3, sm: 4 },
         }}
@@ -167,18 +143,23 @@ const DashboardAnalyticsPage = async ({
           gridTemplateColumns: { xs: "1fr", sm: "repeat(3, minmax(0, 1fr))" },
         }}
       >
-        <MetricCard
+        <DashboardMetricCard
           label="Offer views"
+          mark="V"
           value={analytics.totalViews.toLocaleString()}
           explanation="Unique viewing sessions where an offer card was actually seen."
         />
-        <MetricCard
+        <DashboardMetricCard
           label="Intent actions"
+          mark="↗"
+          tone="violet"
           value={analytics.totalIntentActions.toLocaleString()}
           explanation="Clicks, waitlist signups, or interest actions matched to each offer’s goal."
         />
-        <MetricCard
+        <DashboardMetricCard
           label="Strongest response"
+          mark="S"
+          tone="cyan"
           value={strongestOffer?.title ?? "Not enough data"}
           explanation="36Stories waits for at least 10 views before comparing offers."
         />
@@ -195,7 +176,10 @@ const DashboardAnalyticsPage = async ({
         </Box>
 
         {analytics.offers.length === 0 ? (
-          <Paper variant="outlined" sx={{ borderRadius: 3, p: 3, textAlign: "center" }}>
+          <Paper
+            elevation={0}
+            sx={{ border: "1px dashed #bfdbfe", borderRadius: 3, bgcolor: "#f8fbff", p: 3, textAlign: "center" }}
+          >
             <Typography sx={{ fontWeight: 800 }}>No published offers yet</Typography>
             <Typography color="text.secondary" sx={{ mt: 1 }}>
               Publish an offer and share your bio page to begin collecting intent.
@@ -210,8 +194,14 @@ const DashboardAnalyticsPage = async ({
               component="article"
               id={`offer-${offer.id}`}
               key={offer.id}
-              variant="outlined"
-              sx={{ borderRadius: 3, p: { xs: 2.5, sm: 3 }, scrollMarginTop: 24 }}
+              elevation={0}
+              sx={{
+                border: "1px solid #e4e7ec",
+                borderRadius: 3,
+                boxShadow: "0 8px 24px rgba(16, 24, 40, 0.035)",
+                p: { xs: 2.5, sm: 3 },
+                scrollMarginTop: 24,
+              }}
             >
               <Stack spacing={2}>
                 <Stack
