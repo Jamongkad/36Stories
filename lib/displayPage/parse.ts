@@ -1,69 +1,45 @@
-export const DISPLAY_NAME_MAX_LENGTH = 80;
-export const DISPLAY_BIO_MAX_LENGTH = 240;
-export const DISPLAY_LINK_LABEL_MAX_LENGTH = 60;
-export const DISPLAY_LINK_URL_MAX_LENGTH = 2048;
-export const DISPLAY_LINK_LIMIT = 10;
-
-export type DisplayPageLink = {
-  id: string;
-  label: string;
-  url: string;
-};
-
-export type DisplayPageConfigurationV1 = {
-  version: 1;
-  displayName: string;
-  bio: string;
-  links: DisplayPageLink[];
-  selectedCollectionWidgetId: string | null;
-};
-
-export type DisplayPageFieldName =
-  | "displayName"
-  | "bio"
-  | "links"
-  | "selectedCollectionWidgetId";
-
-export type DisplayPageActionState = {
-  status: "idle" | "error" | "success";
-  message: string;
-  fieldErrors?: Partial<Record<DisplayPageFieldName, string>>;
-};
-
-export const initialDisplayPageActionState: DisplayPageActionState = {
-  status: "idle",
-  message: "",
-};
+import {
+  DISPLAY_BIO_MAX_LENGTH,
+  DISPLAY_LINK_LABEL_MAX_LENGTH,
+  DISPLAY_LINK_LIMIT,
+  DISPLAY_LINK_URL_MAX_LENGTH,
+  DISPLAY_NAME_MAX_LENGTH,
+  displayPageBackgroundColors,
+  displayPageButtonColors,
+  displayPageThemes,
+} from "./constants";
+import { isHttpUrl } from "./validation";
+import type {
+  DisplayPageConfigurationV2,
+  DisplayPageBackgroundColor,
+  DisplayPageButtonColor,
+  DisplayPageLink,
+  DisplayPageTheme,
+} from "./types";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-export const isHttpUrl = (value: string) => {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch {
-    return false;
-  }
-};
-
 export const createDefaultDisplayPageConfiguration = (
   displayName: string,
-): DisplayPageConfigurationV1 => ({
-  version: 1,
+): DisplayPageConfigurationV2 => ({
+  version: 2,
   displayName: displayName.trim().slice(0, DISPLAY_NAME_MAX_LENGTH),
   bio: "",
   links: [],
   selectedCollectionWidgetId: null,
+  theme: "sophisticated",
+  backgroundColor: "sand",
+  buttonColor: "forest",
 });
 
 export const parseDisplayPageConfiguration = (
   value: unknown,
   fallbackDisplayName: string,
-): DisplayPageConfigurationV1 => {
+): DisplayPageConfigurationV2 => {
   const fallback = createDefaultDisplayPageConfiguration(fallbackDisplayName);
 
-  if (!isRecord(value) || value.version !== 1) {
+  if (!isRecord(value) || (value.version !== 1 && value.version !== 2)) {
     return fallback;
   }
 
@@ -80,15 +56,26 @@ export const parseDisplayPageConfiguration = (
     value.selectedCollectionWidgetId.trim()
       ? value.selectedCollectionWidgetId.trim()
       : null;
+  const theme = displayPageThemes.includes(value.theme as DisplayPageTheme)
+    ? (value.theme as DisplayPageTheme)
+    : fallback.theme;
+  const backgroundColor = displayPageBackgroundColors.includes(
+    value.backgroundColor as DisplayPageBackgroundColor,
+  )
+    ? (value.backgroundColor as DisplayPageBackgroundColor)
+    : fallback.backgroundColor;
+  const buttonColor = displayPageButtonColors.includes(
+    value.buttonColor as DisplayPageButtonColor,
+  )
+    ? (value.buttonColor as DisplayPageButtonColor)
+    : fallback.buttonColor;
 
   const seenLinkIds = new Set<string>();
   const links = Array.isArray(value.links)
     ? value.links
         .slice(0, DISPLAY_LINK_LIMIT)
         .flatMap((link): DisplayPageLink[] => {
-          if (!isRecord(link)) {
-            return [];
-          }
+          if (!isRecord(link)) return [];
 
           const id = typeof link.id === "string" ? link.id.trim() : "";
           const label = typeof link.label === "string" ? link.label.trim() : "";
@@ -111,18 +98,19 @@ export const parseDisplayPageConfiguration = (
     : [];
 
   return {
-    version: 1,
+    version: 2,
     displayName,
     bio,
     links,
     selectedCollectionWidgetId,
+    theme,
+    backgroundColor,
+    buttonColor,
   };
 };
 
 export const getCollectionHeadline = (value: unknown) => {
-  if (!isRecord(value) || typeof value.headline !== "string") {
-    return null;
-  }
+  if (!isRecord(value) || typeof value.headline !== "string") return null;
 
   const headline = value.headline.trim();
   return headline ? headline.slice(0, 120) : null;

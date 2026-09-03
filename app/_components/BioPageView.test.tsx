@@ -3,10 +3,13 @@ import { describe, expect, it } from "vitest";
 import BioPageView from "./BioPageView";
 
 const config = {
-  version: 1 as const,
+  version: 2 as const,
   displayName: "Maya Creator",
   bio: "Honest product reviews and creator tips.",
   selectedCollectionWidgetId: "collection-1",
+  theme: "sophisticated" as const,
+  backgroundColor: "sand" as const,
+  buttonColor: "forest" as const,
   links: [
     { id: "youtube", label: "YouTube", url: "https://youtube.com/maya" },
     { id: "amazon", label: "Amazon", url: "https://amazon.com/shop/maya" },

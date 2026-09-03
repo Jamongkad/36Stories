@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import type { DisplayPageAppearance } from "@/lib/displayPage";
 import { offerCtaPolicy } from "@/lib/offers/policy";
 import type { PublicOffer } from "@/lib/offers/types";
 import { joinOfferWaitlist, recordOfferEvent } from "./tracking";
@@ -9,14 +10,19 @@ import { joinOfferWaitlist, recordOfferEvent } from "./tracking";
 type SubmissionState = "idle" | "pending" | "success" | "error";
 
 type OfferActionProps = {
+  appearance: DisplayPageAppearance;
   offer: PublicOffer;
   trackingEnabled: boolean;
 };
 
-const OutboundOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
+const OutboundOfferAction = ({ appearance, offer, trackingEnabled }: OfferActionProps) => {
   if (!offer.destinationUrl) {
     return (
-      <Button disabled variant="contained" sx={{ minHeight: 48, mt: 0.5 }}>
+      <Button
+        disabled
+        sx={{ bgcolor: appearance.button, borderRadius: appearance.buttonRadius, color: appearance.buttonText, minHeight: 48, mt: 0.5 }}
+        variant="contained"
+      >
         {offer.ctaLabel}
       </Button>
     );
@@ -37,14 +43,14 @@ const OutboundOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
       rel="noopener noreferrer"
       target="_blank"
       variant="contained"
-      sx={{ minHeight: 48, mt: 0.5 }}
+      sx={{ bgcolor: appearance.button, borderRadius: appearance.buttonRadius, color: appearance.buttonText, minHeight: 48, mt: 0.5 }}
     >
       {offer.ctaLabel}
     </Button>
   );
 };
 
-const WaitlistOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
+const WaitlistOfferAction = ({ appearance, offer, trackingEnabled }: OfferActionProps) => {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<SubmissionState>("idle");
 
@@ -80,7 +86,7 @@ const WaitlistOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
         />
         <Button
           disabled={state === "pending" || state === "success"}
-          sx={{ minHeight: 48 }}
+          sx={{ bgcolor: appearance.button, borderRadius: appearance.buttonRadius, color: appearance.buttonText, minHeight: 48 }}
           type="submit"
           variant="contained"
         >
@@ -107,7 +113,7 @@ const WaitlistOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
   );
 };
 
-const InterestOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
+const InterestOfferAction = ({ appearance, offer, trackingEnabled }: OfferActionProps) => {
   const [state, setState] = useState<SubmissionState>("idle");
 
   const recordInterest = async () => {
@@ -130,7 +136,7 @@ const InterestOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
       <Button
         disabled={state === "pending" || state === "success"}
         onClick={recordInterest}
-        sx={{ minHeight: 48 }}
+        sx={{ bgcolor: appearance.button, borderRadius: appearance.buttonRadius, color: appearance.buttonText, minHeight: 48 }}
         variant="contained"
       >
         {state === "pending"
@@ -155,14 +161,14 @@ const InterestOfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
   );
 };
 
-const OfferAction = ({ offer, trackingEnabled }: OfferActionProps) => {
+const OfferAction = ({ appearance, offer, trackingEnabled }: OfferActionProps) => {
   switch (offer.ctaType) {
     case "OUTBOUND":
-      return <OutboundOfferAction offer={offer} trackingEnabled={trackingEnabled} />;
+      return <OutboundOfferAction appearance={appearance} offer={offer} trackingEnabled={trackingEnabled} />;
     case "WAITLIST":
-      return <WaitlistOfferAction offer={offer} trackingEnabled={trackingEnabled} />;
+      return <WaitlistOfferAction appearance={appearance} offer={offer} trackingEnabled={trackingEnabled} />;
     case "INTEREST":
-      return <InterestOfferAction offer={offer} trackingEnabled={trackingEnabled} />;
+      return <InterestOfferAction appearance={appearance} offer={offer} trackingEnabled={trackingEnabled} />;
     default: {
       const unsupportedCta: never = offer.ctaType;
       throw new Error(`Unsupported offer CTA: ${unsupportedCta}`);
