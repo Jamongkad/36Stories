@@ -419,7 +419,7 @@ async function main() {
   });
 
   const displayConfig = {
-    version: 1,
+    version: 2,
     displayName: "36Stories Demo",
     bio: "Creator stories, recommendations, and honest feedback in one place.",
     links: [
@@ -435,6 +435,9 @@ async function main() {
       },
     ],
     selectedCollectionWidgetId: collectionWidget.id,
+    theme: "sophisticated",
+    backgroundColor: "sand",
+    buttonColor: "forest",
   };
   const existingDisplayWidget = await prisma.widget.findFirst({
     where: { siteId: site.id, type: WidgetType.DISPLAY },

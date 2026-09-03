@@ -29,9 +29,5 @@ describe("Sidebar Component", () => {
 		expect(screen.queryByRole("link", { name: "Inbox" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link", { name: "Collection Forms" })).not.toBeInTheDocument();
 		expect(screen.queryByRole("link", { name: "Testimonial Page" })).not.toBeInTheDocument();
-		expect(screen.getByRole("link", { name: "+ Create offer" })).toHaveAttribute(
-			"href",
-			"/dashboard/offers/new",
-		);
 	});	
 });

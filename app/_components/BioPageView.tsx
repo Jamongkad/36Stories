@@ -8,10 +8,13 @@ import {
 } from "@mui/material";
 import type { PublicOffer } from "@/lib/offers/types";
 import OfferCard from "./OfferCard";
-import type { DisplayPageConfigurationV1 } from "@/lib/displayPage";
+import {
+  getDisplayPageAppearance,
+  type DisplayPageConfigurationV2,
+} from "@/lib/displayPage";
 
 type BioPageViewProps = {
-  config: DisplayPageConfigurationV1;
+  config: DisplayPageConfigurationV2;
   offers?: PublicOffer[];
   preview?: boolean;
 };
@@ -29,22 +32,26 @@ const BioPageView = ({
   offers = [],
   preview = false,
 }: BioPageViewProps) => {
+  const appearance = getDisplayPageAppearance(config);
+  const linkButtonColor = config.theme === "minimalist" ? appearance.button : appearance.buttonText;
+
   return (
     <Box
       component={preview ? "div" : "main"}
+      data-theme={config.theme}
       sx={{
         minHeight: preview ? 640 : "100dvh",
         overflowX: "hidden",
-        bgcolor: "#f7f2e9",
-        backgroundImage:
-          "radial-gradient(circle at 50% 0%, rgba(230, 180, 104, 0.22), transparent 22rem)",
-        color: "#231f1a",
+        bgcolor: appearance.background,
+        backgroundImage: appearance.backgroundImage,
+        borderRadius: preview ? appearance.pageRadius : 0,
+        color: appearance.text,
         px: { xs: 2, sm: 3 },
         py: { xs: 4, sm: 6 },
       }}
     >
       <Stack
-        spacing={4}
+        spacing={appearance.sectionSpacing}
         sx={{
           width: "100%",
           maxWidth: 620,
@@ -57,8 +64,8 @@ const BioPageView = ({
             sx={{
               width: 72,
               height: 72,
-              bgcolor: "#1f6849",
-              color: "white",
+              bgcolor: appearance.button,
+              color: appearance.buttonText,
               fontSize: "1.3rem",
               fontWeight: 800,
             }}
@@ -69,7 +76,7 @@ const BioPageView = ({
             <Typography
               component="h1"
               sx={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontFamily: appearance.headingFontFamily,
                 fontSize: { xs: "2rem", sm: "2.35rem" },
                 fontWeight: 500,
                 lineHeight: 1.08,
@@ -81,7 +88,7 @@ const BioPageView = ({
             {config.bio && (
               <Typography
                 sx={{
-                  color: "#655f57",
+                  color: appearance.mutedText,
                   fontSize: "1rem",
                   lineHeight: 1.6,
                   mt: 1.5,
@@ -99,7 +106,7 @@ const BioPageView = ({
             component="h2"
             id="offers-heading"
             sx={{
-              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontFamily: appearance.headingFontFamily,
               fontSize: "1.65rem",
               textAlign: "center",
             }}
@@ -111,8 +118,9 @@ const BioPageView = ({
             <Paper
               variant="outlined"
               sx={{
-                borderColor: "#ded5c8",
-                bgcolor: "rgba(255, 255, 255, 0.64)",
+                borderColor: appearance.border,
+                bgcolor: appearance.card,
+                borderRadius: appearance.cardRadius,
                 p: 3,
                 textAlign: "center",
               }}
@@ -121,7 +129,12 @@ const BioPageView = ({
             </Paper>
           ) : (
             offers.map((offer) => (
-              <OfferCard key={offer.id} offer={offer} trackingEnabled={!preview} />
+              <OfferCard
+                appearance={appearance}
+                key={offer.id}
+                offer={offer}
+                trackingEnabled={!preview}
+              />
             ))
           )}
         </Stack>
@@ -132,7 +145,7 @@ const BioPageView = ({
               component="h2"
               id="social-links-heading"
               sx={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
+                fontFamily: appearance.headingFontFamily,
                 fontSize: "1.35rem",
                 textAlign: "center",
               }}
@@ -147,18 +160,19 @@ const BioPageView = ({
                   key={link.id}
                   rel="noopener noreferrer"
                   target="_blank"
-                  variant="outlined"
+                  variant={config.theme === "minimalist" ? "outlined" : "contained"}
                   sx={{
                     minHeight: 52,
-                    borderColor: "#bbb1a3",
-                    bgcolor: "rgba(255, 255, 255, 0.62)",
-                    color: "#231f1a",
+                    borderColor: appearance.button,
+                    bgcolor: config.theme === "minimalist" ? "transparent" : appearance.button,
+                    color: linkButtonColor,
+                    borderRadius: appearance.buttonRadius,
                     justifyContent: "space-between",
                     px: 2.5,
                     textAlign: "left",
                     "&:hover": {
-                      borderColor: "#1f6849",
-                      bgcolor: "white",
+                      borderColor: appearance.button,
+                      bgcolor: config.theme === "minimalist" ? `${appearance.button}12` : appearance.button,
                     },
                   }}
                 >
@@ -172,7 +186,7 @@ const BioPageView = ({
 
         <Typography
           component="footer"
-          sx={{ color: "#777067", fontSize: "0.75rem", textAlign: "center" }}
+          sx={{ color: appearance.mutedText, fontSize: "0.75rem", textAlign: "center" }}
         >
           Powered by 36Stories
         </Typography>

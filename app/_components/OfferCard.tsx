@@ -1,17 +1,27 @@
 "use client";
 
 import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
+import {
+  getDisplayPageAppearance,
+  type DisplayPageAppearance,
+} from "@/lib/displayPage";
 import { offerKindPolicy, offerModePolicy } from "@/lib/offers/policy";
 import type { PublicOffer } from "@/lib/offers/types";
 import OfferAction from "./offer-card/OfferAction";
 import { useOfferViewTracking } from "./offer-card/useOfferViewTracking";
 
 type OfferCardProps = {
+  appearance?: DisplayPageAppearance;
   offer: PublicOffer;
   trackingEnabled?: boolean;
 };
 
-const OfferCard = ({ offer, trackingEnabled = true }: OfferCardProps) => {
+const OfferCard = ({ appearance, offer, trackingEnabled = true }: OfferCardProps) => {
+  const pageAppearance = appearance ?? getDisplayPageAppearance({
+    theme: "sophisticated",
+    backgroundColor: "sand",
+    buttonColor: "forest",
+  });
   const cardRef = useOfferViewTracking(offer.id, trackingEnabled);
 
   return (
@@ -20,9 +30,9 @@ const OfferCard = ({ offer, trackingEnabled = true }: OfferCardProps) => {
       ref={cardRef}
       variant="outlined"
       sx={{
-        borderColor: "#ded5c8",
-        bgcolor: "rgba(255, 255, 255, 0.8)",
-        borderRadius: 3,
+        borderColor: pageAppearance.border,
+        bgcolor: pageAppearance.card,
+        borderRadius: pageAppearance.cardRadius,
         overflow: "hidden",
       }}
     >
@@ -37,7 +47,7 @@ const OfferCard = ({ offer, trackingEnabled = true }: OfferCardProps) => {
       <Stack spacing={1.5} sx={{ p: { xs: 2.5, sm: 3 } }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
           <Chip label={offerKindPolicy[offer.kind].label} size="small" />
-          <Typography color="text.secondary" variant="body2">
+          <Typography sx={{ color: pageAppearance.mutedText }} variant="body2">
             {offerModePolicy[offer.mode].label}
           </Typography>
           {offer.priceLabel && (
@@ -52,24 +62,24 @@ const OfferCard = ({ offer, trackingEnabled = true }: OfferCardProps) => {
         </Typography>
 
         {offer.description && (
-          <Typography color="text.secondary" sx={{ lineHeight: 1.6 }}>
+            <Typography sx={{ color: pageAppearance.mutedText, lineHeight: 1.6 }}>
             {offer.description}
           </Typography>
         )}
 
         {offer.launchAt && (
-          <Typography color="text.secondary" variant="body2">
+          <Typography sx={{ color: pageAppearance.mutedText }} variant="body2">
             Launches {offer.launchAt}
           </Typography>
         )}
 
         {offer.isAffiliate && offer.disclosureText && (
-          <Typography color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+          <Typography sx={{ color: pageAppearance.mutedText, fontSize: "0.75rem" }}>
             {offer.disclosureText}
           </Typography>
         )}
 
-        <OfferAction offer={offer} trackingEnabled={trackingEnabled} />
+        <OfferAction appearance={pageAppearance} offer={offer} trackingEnabled={trackingEnabled} />
       </Stack>
     </Paper>
   );

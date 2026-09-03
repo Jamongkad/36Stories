@@ -1,11 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import {
   type OfferFormActionState,
   validateOfferForm,
 } from "@/lib/offerForm";
+import { revalidateCreatorPaths } from "@/lib/revalidatePaths";
 
 export async function createOffer(
   _previousState: OfferFormActionState,
@@ -54,10 +54,7 @@ export async function createOffer(
       select: { id: true },
     });
 
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/offers");
-    revalidatePath("/dashboard/analytics");
-    revalidatePath(`/bio/${site.organization.slug}`);
+    revalidateCreatorPaths(site.organization.slug);
 
     return {
       status: "success",

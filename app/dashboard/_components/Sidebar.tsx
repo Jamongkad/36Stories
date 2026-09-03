@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/dashboard", label: "Overview", mark: "O" },
+  { href: "/dashboard/bio", label: "Bio page", mark: "B" },
   { href: "/dashboard/offers", label: "Offers", mark: "P" },
   { href: "/dashboard/analytics", label: "Analytics", mark: "A" },
 ] as const;
@@ -24,7 +25,7 @@ const Sidebar = () => {
 				display: { xs: "grid", md: "flex" },
 				flexDirection: { md: "column" },
 				gap: 1,
-				gridTemplateColumns: { xs: "repeat(3, minmax(0, 1fr))" },
+				gridTemplateColumns: { xs: "repeat(4, minmax(0, 1fr))" },
 				p: { xs: 1.25, md: 2 },
 			}}
 		>
@@ -72,7 +73,7 @@ const Sidebar = () => {
 						>
 							{item.mark}
 						</Box>
-						<Typography component="span" sx={{ fontSize: "0.9rem", fontWeight: isActive ? 750 : 650 }}>
+						<Typography component="span" sx={{ fontSize: { xs: "0.75rem", sm: "0.9rem" }, fontWeight: isActive ? 750 : 650 }}>
 							{item.label}
 						</Typography>
 					</ButtonBase>

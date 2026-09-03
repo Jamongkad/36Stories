@@ -1,4 +1,4 @@
-import { isHttpUrl } from "./displayPage";
+import { isHttpUrl } from "./displayPage/validation";
 import {
   isOfferDestinationType,
   isOfferKind,

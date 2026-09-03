@@ -1,7 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { revalidateCreatorPaths } from "@/lib/revalidatePaths";
 
 export async function setOfferPublished(offerId: string, isPublished: boolean) {
   const normalizedOfferId = typeof offerId === "string" ? offerId.trim() : "";
@@ -27,7 +27,7 @@ export async function setOfferPublished(offerId: string, isPublished: boolean) {
     data: { isPublished },
   });
 
-  revalidate(site.organization.slug);
+  revalidateCreatorPaths(site.organization.slug);
 }
 
 export async function deleteOffer(offerId: string) {
@@ -53,12 +53,5 @@ export async function deleteOffer(offerId: string) {
     where: { id: normalizedOfferId, siteId: site.id },
   });
 
-  revalidate(site.organization.slug);
+  revalidateCreatorPaths(site.organization.slug);
 }
-
-const revalidate = (slug: string) => {
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/offers");
-  revalidatePath("/dashboard/analytics");
-  revalidatePath(`/bio/${slug}`);
-};
