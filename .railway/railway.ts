@@ -16,6 +16,8 @@ export default defineRailway(() => {
     env: {
       DATABASE_URL: database.env.DATABASE_URL,
       RAILPACK_NODE_NPM_INSTALL: "npm ci",
+      // Next's standalone server otherwise inherits Railway's container hostname.
+      HOSTNAME: "0.0.0.0",
 
       // Safe to commit: this is the public production origin.
       BETTER_AUTH_URL: "https://36stories.app",
