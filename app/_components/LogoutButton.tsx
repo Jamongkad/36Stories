@@ -12,7 +12,12 @@ export default function LogoutButton() {
       disabled={loading}
       onClick={async () => {
         setLoading(true);
-        await fetch("/api/auth/sign-out", { method: "POST", credentials: "include" });
+        await fetch("/api/auth/sign-out", {
+          body: JSON.stringify({}),
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
         router.replace("/login");
         router.refresh();
       }}
