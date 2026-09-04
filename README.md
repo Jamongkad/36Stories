@@ -64,38 +64,36 @@ analytics activity.
 
 ## Railway deployment
 
-The application is ready for Railway's Node service with PostgreSQL. Railway's
-legacy `railway.toml` Config as Code is retained for an existing linked service,
-but Railway no longer lets new services opt into that format. For a new service,
-configure the equivalent settings in the Railway dashboard:
+Railway Infrastructure as Code is defined in `.railway/railway.ts`. It creates
+the `Postgres` database service, attaches persistent storage using Railway's
+PostgreSQL resource, and creates the GitHub-backed `36Stories` web service.
+The web service receives `DATABASE_URL` as a typed reference to the database's
+private connection URL, so no database credentials are committed to source.
 
-1. Create one project with a Railway PostgreSQL service and a GitHub service for
-   this repository. Generate a public domain for the web service; keep Postgres
-   on private networking.
-2. Add these variables to the web service:
+The Railway SDK is a development dependency used by the Railway CLI. Use
+Railway CLI 5.42.1 or newer:
 
-   ```dotenv
-   DATABASE_URL=${{Postgres.DATABASE_URL}}
-   BETTER_AUTH_URL=https://your-public-domain.example
-   BETTER_AUTH_SECRET=<independent output of: openssl rand -base64 32>
-   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<independent output of: openssl rand -base64 32>
-   RAILPACK_NODE_NPM_INSTALL=npm ci
-   ```
+```bash
+railway link
+railway config plan
+railway config apply
+```
 
-   The `Postgres` namespace must match the database service's Railway name.
-   `BETTER_AUTH_URL` must be the exact public HTTPS origin, without a path.
-   The build can generate Prisma Client without `DATABASE_URL`, but the
-   pre-deploy migration and running application still require this reference.
-3. Use `npm run build` as the build command and `npm start` as the start
-   command. Railway supplies `PORT`; the standalone server binds to `0.0.0.0`.
-4. Set the pre-deploy command to `npm run deploy:prepare`. It validates the
-   required production variables and runs committed Prisma migrations. Set a
-   finite pre-deploy timeout in the service settings (300 seconds is a sensible
-   starting point).
-5. Set the healthcheck path to `/api/health`. It returns `200` only when the web
-   process can reach PostgreSQL. A 100-second healthcheck timeout is configured
-   for legacy services; increase it in Railway if cold starts require more time.
-6. Leave the restart policy on **On Failure**, then deploy the `main` branch.
+Review the plan before applying it. The first apply provisions PostgreSQL and
+the web service in the linked project. Generate a public domain for the web
+service, then set these web-service variables in Railway:
+
+```dotenv
+BETTER_AUTH_URL=https://your-public-domain.example
+BETTER_AUTH_SECRET=<independent output of: openssl rand -base64 32>
+NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<independent output of: openssl rand -base64 32>
+```
+
+The IaC file preserves those values without writing them to source. `BETTER_AUTH_URL`
+must be the exact public HTTPS origin, without a path. `RAILPACK_NODE_NPM_INSTALL`
+is set to `npm ci` by the IaC file. The build uses `npm run build`, migrations run
+with `npm run deploy:prepare`, `npm start` launches the standalone server, and
+`/api/health` is used as the healthcheck.
 
 The build generates Prisma Client and packages `public/` plus `.next/static/`
 inside the standalone output, so styles and static files are present in the

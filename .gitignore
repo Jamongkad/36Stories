@@ -32,6 +32,7 @@
 # local credential stores
 .envrc
 secrets/
+.railway/*.json
 
 # debug
 npm-debug.log*
