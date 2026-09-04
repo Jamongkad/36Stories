@@ -1,10 +1,12 @@
+# Legacy Config as Code for an existing Railway service. New Railway services
+# must set these values in the dashboard or migrate to .railway/railway.ts.
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 buildCommand = "npm run build"
 
 [deploy]
-preDeployCommand = "npm run db:migrate:deploy"
-startCommand = "node .next/standalone/server.js"
-healthcheckPath = "/"
+preDeployCommand = ["npm run deploy:prepare"]
+startCommand = "npm start"
+healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"

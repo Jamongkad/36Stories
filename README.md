@@ -64,22 +64,47 @@ analytics activity.
 
 ## Railway deployment
 
-Create a Railway PostgreSQL service and a Node service for this repository. Add
-the PostgreSQL service's private `DATABASE_URL` reference variable to the Node
-service, then configure `BETTER_AUTH_URL` to the deployed HTTPS origin,
-`BETTER_AUTH_SECRET` to a high-entropy secret, and a stable
-`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`. Set the Railway pre-deploy command to:
+The application is ready for Railway's Node service with PostgreSQL. Railway's
+legacy `railway.toml` Config as Code is retained for an existing linked service,
+but Railway no longer lets new services opt into that format. For a new service,
+configure the equivalent settings in the Railway dashboard:
 
-```bash
-npm run db:migrate:deploy
-```
+1. Create one project with a Railway PostgreSQL service and a GitHub service for
+   this repository. Generate a public domain for the web service; keep Postgres
+   on private networking.
+2. Add these variables to the web service:
 
-The build runs `prisma generate` as part of the install/build pipeline and the
-Next service uses the standalone output and Railway's assigned `PORT`. Run
-`npm run db:seed` manually from an operator shell after setting all beta
-variables in that shell; the seed never prints passwords and refuses partial
-configuration. Do not expose the PostgreSQL public proxy for application
-traffic.
+   ```dotenv
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   BETTER_AUTH_URL=https://your-public-domain.example
+   BETTER_AUTH_SECRET=<independent output of: openssl rand -base64 32>
+   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<independent output of: openssl rand -base64 32>
+   RAILPACK_NODE_NPM_INSTALL=npm ci
+   ```
+
+   The `Postgres` namespace must match the database service's Railway name.
+   `BETTER_AUTH_URL` must be the exact public HTTPS origin, without a path.
+3. Use `npm run build` as the build command and `npm start` as the start
+   command. Railway supplies `PORT`; the standalone server binds to `0.0.0.0`.
+4. Set the pre-deploy command to `npm run deploy:prepare`. It validates the
+   required production variables and runs committed Prisma migrations. Set a
+   finite pre-deploy timeout in the service settings (300 seconds is a sensible
+   starting point).
+5. Set the healthcheck path to `/api/health`. It returns `200` only when the web
+   process can reach PostgreSQL. A 100-second healthcheck timeout is configured
+   for legacy services; increase it in Railway if cold starts require more time.
+6. Leave the restart policy on **On Failure**, then deploy the `main` branch.
+
+The build generates Prisma Client and packages `public/` plus `.next/static/`
+inside the standalone output, so styles and static files are present in the
+deployed image. Railway's Git commit SHA is also used as the Next.js deployment
+ID to protect clients from version skew during deploys.
+
+After the first successful deploy, run `npm run db:seed` once from an operator
+shell after setting all beta variables in that shell. The seed never prints
+passwords and refuses partial configuration. Then verify `/api/health`, the
+public bio page, login, an offer view/click, and a waitlist signup. Do not expose
+the PostgreSQL public proxy for application traffic.
 
 The dashboard is username/password protected. Public Bio Pages and public
 offer pages remain unauthenticated, while their analytics and waitlist writes
@@ -121,6 +146,9 @@ When adding an offer rule:
 - `npm run build` — create a production build
 - `npm start` — serve the production build
 - `npm run lint` — run ESLint
+- `npm test` — run the test suite once
+- `npm run deploy:check` — validate required production deployment variables
+- `npm run deploy:prepare` — validate variables and apply production migrations
 - `npm run db:generate` — generate Prisma Client into `generated/prisma`
 - `npm run db:migrate` — create/apply development migrations
 - `npm run db:seed` — create or refresh the local demo organization and site

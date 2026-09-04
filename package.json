@@ -2,14 +2,19 @@
   "name": "36stories",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.13.0 <23"
+  },
   "scripts": {
     "dev": "next dev",
     "prebuild": "prisma generate",
-    "build": "next build",
+    "build": "next build && node scripts/package-standalone.mjs",
     "start": "node .next/standalone/server.js",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "deploy:check": "node scripts/check-deployment-env.mjs",
+    "deploy:prepare": "npm run deploy:check && npm run db:migrate:deploy",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",

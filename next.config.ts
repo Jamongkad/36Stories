@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  deploymentId: process.env.RAILWAY_GIT_COMMIT_SHA,
   async headers() {
     const isProduction = process.env.NODE_ENV === "production";
     const scriptSource = isProduction ? "'self' 'unsafe-inline'" : "'self' 'unsafe-inline' 'unsafe-eval'";
