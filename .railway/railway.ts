@@ -25,6 +25,19 @@ export default defineRailway(() => {
       // These secrets stay in Railway and are retained by IaC without exposing them here.
       BETTER_AUTH_SECRET: preserve(),
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: preserve(),
+
+      // One-time beta seed inputs. Keep the values environment-specific and out of Git.
+      // Enter them once in Railway (or inject them with the CLI/CI), then run npm run db:seed.
+      BETA_OWNER_NAME: preserve(),
+      BETA_OWNER_EMAIL: preserve(),
+      BETA_OWNER_USERNAME: preserve(),
+      BETA_OWNER_PASSWORD: preserve(),
+      BETA_WIFE_NAME: preserve(),
+      BETA_WIFE_EMAIL: preserve(),
+      BETA_WIFE_USERNAME: preserve(),
+      BETA_WIFE_PASSWORD: preserve(),
+      BETA_WIFE_ORGANIZATION_NAME: preserve(),
+      BETA_WIFE_ORGANIZATION_SLUG: preserve(),
     },
   });
 
