@@ -84,6 +84,8 @@ configure the equivalent settings in the Railway dashboard:
 
    The `Postgres` namespace must match the database service's Railway name.
    `BETTER_AUTH_URL` must be the exact public HTTPS origin, without a path.
+   The build can generate Prisma Client without `DATABASE_URL`, but the
+   pre-deploy migration and running application still require this reference.
 3. Use `npm run build` as the build command and `npm start` as the start
    command. Railway supplies `PORT`; the standalone server binds to `0.0.0.0`.
 4. Set the pre-deploy command to `npm run deploy:prepare`. It validates the

@@ -1,7 +1,10 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-const connectionString = process.env.DATABASE_URL;
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+const connectionString =
+  process.env.DATABASE_URL ||
+  (isBuildPhase ? "postgresql://build:build@127.0.0.1:5432/build" : undefined);
 
 if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
