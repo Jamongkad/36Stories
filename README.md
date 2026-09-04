@@ -19,6 +19,12 @@ npm run db:seed
 npm run dev
 ```
 
+Dashboard access is closed-beta only. Before running the seed, fill every
+`BETA_OWNER_*`, `BETA_WIFE_*`, and wife organization variable in `.env` with
+your own values. The seed refuses partial configuration and does not print or
+store plaintext passwords. If those variables are left empty, it seeds only
+the public demo content and no dashboard login is provisioned.
+
 Open [http://localhost:3000](http://localhost:3000), create an offer from the
 dashboard, and view the demo bio page at
 [http://localhost:3000/bio/36stories-demo](http://localhost:3000/bio/36stories-demo).
@@ -55,6 +61,34 @@ does not implicitly generate the client or run seeds during `prisma migrate
 dev`, so both remain explicit steps. The seed is idempotent and creates the
 `36stories-demo` organization, its `localhost` site, and sample offers with
 analytics activity.
+
+## Railway deployment
+
+Create a Railway PostgreSQL service and a Node service for this repository. Add
+the PostgreSQL service's private `DATABASE_URL` reference variable to the Node
+service, then configure `BETTER_AUTH_URL` to the deployed HTTPS origin,
+`BETTER_AUTH_SECRET` to a high-entropy secret, and a stable
+`NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`. Set the Railway pre-deploy command to:
+
+```bash
+npm run db:migrate:deploy
+```
+
+The build runs `prisma generate` as part of the install/build pipeline and the
+Next service uses the standalone output and Railway's assigned `PORT`. Run
+`npm run db:seed` manually from an operator shell after setting all beta
+variables in that shell; the seed never prints passwords and refuses partial
+configuration. Do not expose the PostgreSQL public proxy for application
+traffic.
+
+The dashboard is username/password protected. Public Bio Pages and public
+offer pages remain unauthenticated, while their analytics and waitlist writes
+are body-limited, same-origin checked, rate-limited in PostgreSQL, and
+conflict-safe. To rotate a beta password locally or in an operator shell, run:
+
+```bash
+npm run db:reset-password
+```
 
 ## Project shape
 

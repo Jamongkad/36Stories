@@ -9,6 +9,7 @@ import {
 } from "@/lib/offerAnalytics";
 import { offerKindPolicy } from "@/lib/offers/policy";
 import { prisma } from "@/lib/prisma";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 import {
   DashboardMetricCard,
   DashboardPageHeader,
@@ -47,16 +48,14 @@ const DashboardAnalyticsPage = async ({
   searchParams,
 }: PageProps<"/dashboard/analytics">) => {
   await connection();
+  const creator = await requireCreatorContext();
   const query = await searchParams;
   const period = parseAnalyticsPeriod(query.period);
   const startDate = getAnalyticsStartDate(period);
   const dateFilter = startDate ? { createdAt: { gte: startDate } } : undefined;
 
   const site = await prisma.site.findFirst({
-    where: {
-      domain: "localhost",
-      organization: { slug: "36stories-demo" },
-    },
+    where: { id: creator.siteId, organizationId: creator.organizationId },
     select: {
       offers: {
         where: { isPublished: true },

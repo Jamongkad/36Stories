@@ -3,17 +3,16 @@ import { WidgetType } from "@/generated/prisma/client";
 import { parseDisplayPageConfiguration } from "@/lib/displayPage";
 import type { PublicOffer } from "@/lib/offers/types";
 import { prisma } from "@/lib/prisma";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 import { DashboardPageHeader } from "../_components/DashboardPrimitives";
 import BioPageEditor from "./_components/BioPageEditor";
 
 const BioPageEditorRoute = async () => {
   await connection();
+  const creator = await requireCreatorContext();
 
   const site = await prisma.site.findFirst({
-    where: {
-      domain: "localhost",
-      organization: { slug: "36stories-demo" },
-    },
+    where: { id: creator.siteId, organizationId: creator.organizationId },
     select: {
       organization: { select: { name: true, slug: true } },
       widgets: {
@@ -68,7 +67,7 @@ const BioPageEditorRoute = async () => {
     <>
       <DashboardPageHeader
         action={
-          <a href={`/bio/${site?.organization.slug ?? "36stories-demo"}`} target="_blank">
+          <a href={`/bio/${site?.organization.slug ?? creator.organizationSlug}`} target="_blank">
             View live page ↗
           </a>
         }
@@ -76,7 +75,7 @@ const BioPageEditorRoute = async () => {
         eyebrow="Your public page"
         title="Bio page"
       />
-      <BioPageEditor config={config} offers={offers} publicSlug={site?.organization.slug ?? "36stories-demo"} />
+      <BioPageEditor config={config} offers={offers} publicSlug={site?.organization.slug ?? creator.organizationSlug} />
     </>
   );
 };

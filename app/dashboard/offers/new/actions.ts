@@ -6,6 +6,7 @@ import {
   validateOfferForm,
 } from "@/lib/offerForm";
 import { revalidateCreatorPaths } from "@/lib/revalidatePaths";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 
 export async function createOffer(
   _previousState: OfferFormActionState,
@@ -22,11 +23,9 @@ export async function createOffer(
   }
 
   try {
+    const creator = await requireCreatorContext();
     const site = await prisma.site.findFirst({
-      where: {
-        domain: "localhost",
-        organization: { slug: "36stories-demo" },
-      },
+      where: { id: creator.siteId, organizationId: creator.organizationId },
       select: {
         id: true,
         organization: { select: { slug: true } },

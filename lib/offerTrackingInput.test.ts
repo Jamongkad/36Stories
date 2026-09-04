@@ -41,4 +41,14 @@ describe("offer tracking input", () => {
     expect(parseOfferSignupInput({ email: "invalid", sessionId: "session-1" }))
       .toBeNull();
   });
+
+  it("rejects unexpected fields and non-http referrers", () => {
+    expect(parsePublicOfferEventInput({ type: "VIEW", sessionId: "session-1", extra: true })).toBeNull();
+    expect(parsePublicOfferEventInput({ type: "VIEW", sessionId: "session-1", referrer: "javascript:alert(1)" })).toBeNull();
+  });
+
+  it("preserves a waitlist honeypot for the route to discard", () => {
+    expect(parseOfferSignupInput({ email: "creator@example.com", sessionId: "session-1", website: "bot" }))
+      .toMatchObject({ email: "creator@example.com", honeypot: "bot" });
+  });
 });

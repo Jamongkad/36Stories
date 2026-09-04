@@ -5,25 +5,26 @@ import {
 } from "@/lib/offers/policy";
 import { parseOfferSignupInput } from "@/lib/offerTrackingInput";
 import { prisma } from "@/lib/prisma";
+import { publicRateLimitResponse, readPublicJsonRequest, signupRateLimits, validatePublicOriginRequest } from "@/lib/publicSecurity";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ offerId: string }> },
 ) {
-  let rawInput: unknown;
+  const originResponse = validatePublicOriginRequest(request);
+  if (originResponse) return originResponse;
+  const { offerId } = await params;
+  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(offerId)) return Response.json({ message: "Waitlist offer not found." }, { status: 404 });
+  const rateLimitResponse = await publicRateLimitResponse(request, signupRateLimits(offerId));
+  if (rateLimitResponse) return rateLimitResponse;
+  const json = await readPublicJsonRequest(request);
+  if (!json.ok) return json.response;
 
-  try {
-    rawInput = await request.json();
-  } catch {
-    return Response.json({ message: "Invalid request." }, { status: 400 });
-  }
-
-  const input = parseOfferSignupInput(rawInput);
+  const input = parseOfferSignupInput(json.value);
   if (!input) {
     return Response.json({ message: "Enter a valid email address." }, { status: 400 });
   }
 
-  const { offerId } = await params;
   const offer = await prisma.offer.findFirst({
     where: {
       id: offerId,
@@ -37,37 +38,40 @@ export async function POST(
     return Response.json({ message: "Waitlist offer not found." }, { status: 404 });
   }
 
-  const existingSignup = await prisma.offerSignup.findUnique({
-    where: { offerId_email: { offerId, email: input.email } },
-    select: { id: true },
-  });
+  if (input.honeypot) {
+    return Response.json({ joined: true }, { status: 202 });
+  }
 
-  if (!existingSignup) {
-    const intentEvent = offerCtaPolicy[offer.ctaType].intentEvent;
-    await prisma.$transaction([
-      prisma.offerSignup.create({
-        data: {
-          offerId,
-          email: input.email,
-          consentAt: new Date(),
-          source: input.source,
-        },
-      }),
-      prisma.offerEvent.create({
-        data: {
+  const intentEvent = offerCtaPolicy[offer.ctaType].intentEvent;
+  await prisma.$transaction([
+    prisma.offerSignup.upsert({
+      where: { offerId_email: { offerId, email: input.email } },
+      update: {},
+      create: {
+        offerId,
+        email: input.email,
+        consentAt: new Date(),
+        source: input.source,
+      },
+    }),
+    prisma.offerEvent.upsert({
+      where: {
+        offerId_type_sessionId: {
           offerId,
           type: intentEvent,
           sessionId: input.sessionId,
-          source: input.source,
-          referrer: input.referrer,
         },
-      }),
-    ]);
-    revalidatePath("/dashboard/analytics");
-  }
-
-  return Response.json(
-    { joined: true, alreadyJoined: Boolean(existingSignup) },
-    { status: existingSignup ? 200 : 201 },
-  );
+      },
+      update: {},
+      create: {
+        offerId,
+        type: intentEvent,
+        sessionId: input.sessionId,
+        source: input.source,
+        referrer: input.referrer,
+      },
+    }),
+  ]);
+  revalidatePath("/dashboard/analytics");
+  return Response.json({ joined: true }, { status: 202 });
 }

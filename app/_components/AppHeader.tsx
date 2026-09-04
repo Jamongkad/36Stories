@@ -1,6 +1,7 @@
 import { AppBar, Box, Chip, Toolbar, Typography } from "@mui/material";
+import LogoutButton from "./LogoutButton";
 
-const AppHeader = () => (
+const AppHeader = ({ creator }: { creator?: { name: string; username: string } }) => (
   <AppBar
     position="sticky"
     color="transparent"
@@ -39,15 +40,16 @@ const AppHeader = () => (
         >
           36Stories
         </Typography>
-        <Chip
-          label="Creator workspace"
-          size="small"
-          sx={{
-            bgcolor: "#eff6ff",
-            color: "#1d4ed8",
-            display: { xs: "none", sm: "inline-flex" },
-          }}
-        />
+        {creator && (
+          <>
+            <Chip
+              label={creator.name || `@${creator.username}`}
+              size="small"
+              sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", display: { xs: "none", sm: "inline-flex" }, mr: 1 }}
+            />
+            <LogoutButton />
+          </>
+        )}
       </Toolbar>
   </AppBar>
 );

@@ -1,4 +1,6 @@
 import "dotenv/config";
+import { hashPassword } from "better-auth/crypto";
+import { createLocalAccountIssuer } from "better-auth/db";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
   FeedbackPermission,
@@ -22,7 +24,74 @@ if (!connectionString) {
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
+type BetaUserConfig = {
+  name: string;
+  email: string;
+  username: string;
+  password: string;
+};
+
+function readBetaConfig() {
+  const values = {
+    owner: {
+      name: process.env.BETA_OWNER_NAME,
+      email: process.env.BETA_OWNER_EMAIL,
+      username: process.env.BETA_OWNER_USERNAME,
+      password: process.env.BETA_OWNER_PASSWORD,
+    },
+    wife: {
+      name: process.env.BETA_WIFE_NAME,
+      email: process.env.BETA_WIFE_EMAIL,
+      username: process.env.BETA_WIFE_USERNAME,
+      password: process.env.BETA_WIFE_PASSWORD,
+    },
+    wifeOrganizationName: process.env.BETA_WIFE_ORGANIZATION_NAME,
+    wifeOrganizationSlug: process.env.BETA_WIFE_ORGANIZATION_SLUG,
+  };
+  const anyConfigured = Object.values(values.owner).some(Boolean) || Object.values(values.wife).some(Boolean) || Boolean(values.wifeOrganizationName || values.wifeOrganizationSlug);
+  if (!anyConfigured) return null;
+  const required = [...Object.entries(values.owner), ...Object.entries(values.wife), ["wifeOrganizationName", values.wifeOrganizationName], ["wifeOrganizationSlug", values.wifeOrganizationSlug]] as const;
+  const missing = required.filter(([, value]) => !value).map(([key]) => key);
+  if (missing.length) throw new Error(`Incomplete beta configuration. Missing: ${missing.join(", ")}`);
+  const usernamePattern = /^[a-z0-9_]{3,30}$/;
+  if (!usernamePattern.test(values.owner.username!) || !usernamePattern.test(values.wife.username!)) throw new Error("Beta usernames must be 3-30 lowercase letters, numbers, or underscores.");
+  if (values.owner.username === values.wife.username) throw new Error("Beta usernames must be different.");
+  if (values.owner.email!.toLowerCase() === values.wife.email!.toLowerCase()) throw new Error("Beta email addresses must be different.");
+  if (![values.owner.email, values.wife.email].every((email) => /^\S+@\S+\.\S+$/.test(email!))) throw new Error("Beta email addresses must be valid.");
+  if ([values.owner.password, values.wife.password].some((password) => password!.length < 12 || password!.length > 128)) throw new Error("Beta passwords must be 12-128 characters.");
+  if (!/^[a-z0-9-]{3,63}$/.test(values.wifeOrganizationSlug!)) throw new Error("The wife's organization slug must be lowercase letters, numbers, and hyphens.");
+  if (values.wifeOrganizationSlug === "36stories-demo") throw new Error("The wife's organization slug must differ from 36stories-demo.");
+  return {
+    owner: values.owner as BetaUserConfig,
+    wife: values.wife as BetaUserConfig,
+    wifeOrganizationName: values.wifeOrganizationName!,
+    wifeOrganizationSlug: values.wifeOrganizationSlug!,
+  };
+}
+
+async function provisionUser(config: BetaUserConfig, organizationId: string) {
+  const credentialIssuer = createLocalAccountIssuer("credential");
+  const user = await prisma.user.upsert({
+    where: { username: config.username.toLowerCase() },
+    update: { name: config.name, email: config.email.toLowerCase(), organizationId, emailVerified: true },
+    create: { name: config.name, email: config.email.toLowerCase(), username: config.username.toLowerCase(), organizationId, emailVerified: true },
+  });
+  const existingAccount = await prisma.account.findUnique({
+    where: { issuer_accountId: { issuer: credentialIssuer, accountId: user.id } },
+    select: { id: true, password: true },
+  });
+  if (!existingAccount) {
+    await prisma.account.create({
+      data: { userId: user.id, accountId: user.id, providerId: "credential", issuer: credentialIssuer, password: await hashPassword(config.password) },
+    });
+  } else if (!existingAccount.password) {
+    await prisma.account.update({ where: { id: existingAccount.id }, data: { password: await hashPassword(config.password) } });
+  }
+  return user;
+}
+
 async function main() {
+  const beta = readBetaConfig();
   const organization = await prisma.organization.upsert({
     where: { slug: "36stories-demo" },
     update: { name: "36Stories Demo" },
@@ -464,6 +533,32 @@ async function main() {
         config: displayConfig,
       },
     });
+  }
+
+  if (beta) {
+    await provisionUser(beta.owner, organization.id);
+
+    const wifeOrganization = await prisma.organization.upsert({
+      where: { slug: beta.wifeOrganizationSlug },
+      update: { name: beta.wifeOrganizationName },
+      create: { name: beta.wifeOrganizationName, slug: beta.wifeOrganizationSlug },
+    });
+    const wifeSite = await prisma.site.upsert({
+      where: { id: `beta-site-${wifeOrganization.id}` },
+      update: { name: `${beta.wife.name}'s 36Stories`, domain: "localhost", organizationId: wifeOrganization.id },
+      create: { id: `beta-site-${wifeOrganization.id}`, name: `${beta.wife.name}'s 36Stories`, domain: "localhost", organizationId: wifeOrganization.id },
+    });
+    const collection = await prisma.widget.upsert({
+      where: { publicKey: `collection_${beta.wifeOrganizationSlug}` },
+      update: { siteId: wifeSite.id, name: "Follower stories", type: WidgetType.COLLECTION, isActive: true, config: { version: 2, headline: "Leave me a review", instructions: "Tell me about your experience.", successMessage: "Thanks for sharing your story!", fields: { fullName: { show: true, required: false }, email: { show: false, required: false }, socialProfile: { show: true, required: false } } } },
+      create: { siteId: wifeSite.id, publicKey: `collection_${beta.wifeOrganizationSlug}`, name: "Follower stories", type: WidgetType.COLLECTION, config: { version: 2, headline: "Leave me a review", instructions: "Tell me about your experience.", successMessage: "Thanks for sharing your story!", fields: { fullName: { show: true, required: false }, email: { show: false, required: false }, socialProfile: { show: true, required: false } } } },
+    });
+    await prisma.widget.upsert({
+      where: { publicKey: `display_${beta.wifeOrganizationSlug}` },
+      update: { siteId: wifeSite.id, name: "Bio Page", type: WidgetType.DISPLAY, isActive: true, config: { version: 2, displayName: beta.wife.name, bio: "Stories, recommendations, and honest feedback.", links: [], selectedCollectionWidgetId: collection.id, theme: "sophisticated", backgroundColor: "sand", buttonColor: "forest" } },
+      create: { siteId: wifeSite.id, publicKey: `display_${beta.wifeOrganizationSlug}`, name: "Bio Page", type: WidgetType.DISPLAY, config: { version: 2, displayName: beta.wife.name, bio: "Stories, recommendations, and honest feedback.", links: [], selectedCollectionWidgetId: collection.id, theme: "sophisticated", backgroundColor: "sand", buttonColor: "forest" } },
+    });
+    await provisionUser(beta.wife, wifeOrganization.id);
   }
 }
 

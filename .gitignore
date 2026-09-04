@@ -23,6 +23,15 @@
 # misc
 .DS_Store
 *.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# local credential stores
+.envrc
+secrets/
 
 # debug
 npm-debug.log*
