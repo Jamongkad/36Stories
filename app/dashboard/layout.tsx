@@ -1,11 +1,14 @@
 import { Box, Container } from "@mui/material";
 import AppHeader from "@/app/_components/AppHeader";
+import { getCreatorContext } from "@/lib/creatorAuth";
 import Sidebar from "./_components/Sidebar";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
+  const creator = await getCreatorContext();
+
   return (
     <>
-      <AppHeader />
+      <AppHeader creator={creator ?? undefined} />
       <Box
         sx={{
           display: { xs: "block", md: "grid" },

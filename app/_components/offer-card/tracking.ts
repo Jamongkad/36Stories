@@ -46,11 +46,15 @@ export const recordOfferEvent = async (
   }
 };
 
-export const joinOfferWaitlist = async (offerId: string, email: string) => {
+export const joinOfferWaitlist = async (
+  offerId: string,
+  email: string,
+  website: string,
+) => {
   const response = await fetch(`/api/offers/${offerId}/signups`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, ...getTrackingContext() }),
+    body: JSON.stringify({ email, website, ...getTrackingContext() }),
   });
 
   if (!response.ok) {

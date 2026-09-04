@@ -4,6 +4,7 @@ import { WidgetType } from "@/generated/prisma/client";
 import { parseDisplayPageConfiguration, parseDisplayPageForm, type DisplayPageActionState } from "@/lib/displayPage";
 import { prisma } from "@/lib/prisma";
 import { revalidateCreatorPaths } from "@/lib/revalidatePaths";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 
 export async function saveDisplayPage(
   _previousState: DisplayPageActionState,
@@ -20,11 +21,9 @@ export async function saveDisplayPage(
   }
 
   try {
+    const creator = await requireCreatorContext();
     const site = await prisma.site.findFirst({
-      where: {
-        domain: "localhost",
-        organization: { slug: "36stories-demo" },
-      },
+      where: { id: creator.siteId, organizationId: creator.organizationId },
       select: {
         organization: { select: { name: true, slug: true } },
         widgets: {

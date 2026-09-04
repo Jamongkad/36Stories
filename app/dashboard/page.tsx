@@ -6,15 +6,14 @@ import {
 } from "./_components/DashboardPrimitives";
 import { offerIntentEvents } from "@/lib/offers/policy";
 import { prisma } from "@/lib/prisma";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 
 const DashboardPage = async () => {
   await connection();
+  const creator = await requireCreatorContext();
 
   const site = await prisma.site.findFirst({
-    where: {
-      domain: "localhost",
-      organization: { slug: "36stories-demo" },
-    },
+    where: { id: creator.siteId, organizationId: creator.organizationId },
     select: {
       id: true,
       organization: { select: { slug: true } },
@@ -26,7 +25,7 @@ const DashboardPage = async () => {
   const intentActions = site
     ? await prisma.offerEvent.count({
         where: {
-          offer: { siteId: site.id },
+          offer: { siteId: creator.siteId },
           type: { in: offerIntentEvents },
         },
       })

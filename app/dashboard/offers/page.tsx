@@ -1,18 +1,17 @@
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 import { offerKindPolicy, offerModePolicy } from "@/lib/offers/policy";
 import { DashboardPageHeader } from "../_components/DashboardPrimitives";
 import OfferActions from "./_components/OfferActions";
 
 const DashboardOffersPage = async () => {
   await connection();
+  const creator = await requireCreatorContext();
 
   const site = await prisma.site.findFirst({
-    where: {
-      domain: "localhost",
-      organization: { slug: "36stories-demo" },
-    },
+    where: { id: creator.siteId, organizationId: creator.organizationId },
     select: {
       organization: { select: { slug: true } },
       offers: {

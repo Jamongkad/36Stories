@@ -5,25 +5,26 @@ import {
 } from "@/lib/offers/policy";
 import { parsePublicOfferEventInput } from "@/lib/offerTrackingInput";
 import { prisma } from "@/lib/prisma";
+import { eventRateLimits, publicRateLimitResponse, readPublicJsonRequest, validatePublicOriginRequest } from "@/lib/publicSecurity";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ offerId: string }> },
 ) {
-  let rawInput: unknown;
+  const originResponse = validatePublicOriginRequest(request);
+  if (originResponse) return originResponse;
+  const { offerId } = await params;
+  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(offerId)) return Response.json({ message: "Offer not found." }, { status: 404 });
+  const rateLimitResponse = await publicRateLimitResponse(request, eventRateLimits(offerId));
+  if (rateLimitResponse) return rateLimitResponse;
+  const json = await readPublicJsonRequest(request);
+  if (!json.ok) return json.response;
 
-  try {
-    rawInput = await request.json();
-  } catch {
-    return Response.json({ message: "Invalid request." }, { status: 400 });
-  }
-
-  const input = parsePublicOfferEventInput(rawInput);
+  const input = parsePublicOfferEventInput(json.value);
   if (!input) {
     return Response.json({ message: "Invalid event." }, { status: 400 });
   }
 
-  const { offerId } = await params;
   const offer = await prisma.offer.findFirst({
     where: { id: offerId, isPublished: true },
     select: { ctaType: true },
@@ -38,16 +39,7 @@ export async function POST(
     return Response.json({ message: "Event does not match this offer." }, { status: 400 });
   }
 
-  const existingEvent = await prisma.offerEvent.findFirst({
-    where: {
-      offerId,
-      type: input.type,
-      sessionId: input.sessionId,
-    },
-    select: { id: true },
-  });
-
-  if (!existingEvent) {
+  try {
     await prisma.offerEvent.create({
       data: {
         offerId,
@@ -58,7 +50,9 @@ export async function POST(
       },
     });
     revalidatePath("/dashboard/analytics");
+    return Response.json({ recorded: true }, { status: 201 });
+  } catch (error: unknown) {
+    if (!(error && typeof error === "object" && "code" in error && error.code === "P2002")) throw error;
+    return Response.json({ recorded: true }, { status: 200 });
   }
-
-  return Response.json({ recorded: true }, { status: existingEvent ? 200 : 201 });
 }

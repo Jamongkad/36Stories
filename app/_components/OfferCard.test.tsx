@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PublicOffer } from "@/lib/offers/types";
@@ -87,6 +87,43 @@ describe("OfferCard", () => {
           body: expect.stringContaining("creator@example.com"),
         }),
       );
+    });
+  });
+
+  it("forwards the hidden waitlist honeypot value", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { container } = render(
+      <OfferCard
+        offer={{
+          ...baseOffer,
+          mode: "COMING_SOON",
+          destinationUrl: null,
+          ctaType: "WAITLIST",
+          ctaLabel: "Join early access",
+        }}
+      />,
+    );
+
+    const honeypot = container.querySelector<HTMLInputElement>(
+      'input[name="website"]',
+    );
+    expect(honeypot).not.toBeNull();
+    fireEvent.change(honeypot!, { target: { value: "https://spam.example" } });
+    await user.type(
+      screen.getByRole("textbox", { name: "Email for early access" }),
+      "creator@example.com",
+    );
+    await user.click(screen.getByRole("button", { name: "Join early access" }));
+
+    await waitFor(() => {
+      const options = fetchMock.mock.calls[0]?.[1] as RequestInit;
+      expect(JSON.parse(String(options.body))).toMatchObject({
+        email: "creator@example.com",
+        website: "https://spam.example",
+      });
     });
   });
 

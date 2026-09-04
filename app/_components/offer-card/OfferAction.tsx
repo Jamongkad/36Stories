@@ -56,6 +56,7 @@ const WaitlistOfferAction = ({ appearance, offer, trackingEnabled }: OfferAction
 
   const joinWaitlist = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const website = new FormData(event.currentTarget).get("website");
 
     if (!trackingEnabled) {
       setState("success");
@@ -64,7 +65,11 @@ const WaitlistOfferAction = ({ appearance, offer, trackingEnabled }: OfferAction
 
     setState("pending");
     try {
-      await joinOfferWaitlist(offer.id, email);
+      await joinOfferWaitlist(
+        offer.id,
+        email,
+        typeof website === "string" ? website : "",
+      );
       setState("success");
     } catch {
       setState("error");
@@ -74,6 +79,15 @@ const WaitlistOfferAction = ({ appearance, offer, trackingEnabled }: OfferAction
   return (
     <Box component="form" onSubmit={joinWaitlist} sx={{ mt: 0.5 }}>
       <Stack spacing={1.25}>
+        <TextField
+          aria-hidden="true"
+          autoComplete="off"
+          label="Website"
+          name="website"
+          tabIndex={-1}
+          sx={{ display: "none" }}
+          type="text"
+        />
         <TextField
           autoComplete="email"
           disabled={state === "pending" || state === "success"}

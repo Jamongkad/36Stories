@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidateCreatorPaths } from "@/lib/revalidatePaths";
+import { requireCreatorContext } from "@/lib/creatorAuth";
 
 export async function setOfferPublished(offerId: string, isPublished: boolean) {
   const normalizedOfferId = typeof offerId === "string" ? offerId.trim() : "";
@@ -10,11 +11,10 @@ export async function setOfferPublished(offerId: string, isPublished: boolean) {
     return;
   }
 
+  const creator = await requireCreatorContext().catch(() => null);
+  if (!creator) return;
   const site = await prisma.site.findFirst({
-    where: {
-      domain: "localhost",
-      organization: { slug: "36stories-demo" },
-    },
+    where: { id: creator.siteId, organizationId: creator.organizationId },
     select: { id: true, organization: { select: { slug: true } } },
   });
 
@@ -37,11 +37,10 @@ export async function deleteOffer(offerId: string) {
     return;
   }
 
+  const creator = await requireCreatorContext().catch(() => null);
+  if (!creator) return;
   const site = await prisma.site.findFirst({
-    where: {
-      domain: "localhost",
-      organization: { slug: "36stories-demo" },
-    },
+    where: { id: creator.siteId, organizationId: creator.organizationId },
     select: { id: true, organization: { select: { slug: true } } },
   });
 
