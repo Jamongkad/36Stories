@@ -17,8 +17,10 @@ export default defineRailway(() => {
       DATABASE_URL: database.env.DATABASE_URL,
       RAILPACK_NODE_NPM_INSTALL: "npm ci",
 
-      // These values are set in Railway and retained by IaC without exposing them here.
-      BETTER_AUTH_URL: preserve(),
+      // Safe to commit: this is the public production origin.
+      BETTER_AUTH_URL: "https://36stories.app",
+
+      // These secrets stay in Railway and are retained by IaC without exposing them here.
       BETTER_AUTH_SECRET: preserve(),
       NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: preserve(),
     },
