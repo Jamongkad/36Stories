@@ -3,8 +3,7 @@
 import { Alert, Button, Stack, TextField } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-
-const safeReturnTo = (value: string | null) => value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+import { safeReturnTo } from "@/lib/safeReturnTo";
 
 export default function LoginForm({ returnTo }: { returnTo?: string }) {
   const router = useRouter();
@@ -24,7 +23,7 @@ export default function LoginForm({ returnTo }: { returnTo?: string }) {
         body: JSON.stringify({ username: form.get("username"), password: form.get("password"), rememberMe: true }),
       });
       if (!response.ok) throw new Error("invalid");
-      router.replace(safeReturnTo(returnTo ?? null));
+      router.replace(safeReturnTo(returnTo, window.location.origin));
       router.refresh();
     } catch {
       setError("The username or password is incorrect.");
