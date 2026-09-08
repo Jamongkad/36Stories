@@ -28,6 +28,10 @@ export default defineRailway(() => {
 
       // One-time beta seed inputs. Keep the values environment-specific and out of Git.
       // Enter them once in Railway (or inject them with the CLI/CI), then run npm run db:seed.
+      DEMO_ACCOUNT_NAME: preserve(),
+      DEMO_ACCOUNT_EMAIL: preserve(),
+      DEMO_ACCOUNT_USERNAME: preserve(),
+      DEMO_ACCOUNT_PASSWORD: preserve(),
       BETA_OWNER_NAME: preserve(),
       BETA_OWNER_EMAIL: preserve(),
       BETA_OWNER_USERNAME: preserve(),

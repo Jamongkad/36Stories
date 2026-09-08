@@ -38,6 +38,9 @@ export default function Home() {
               <Button href="/bio/36stories-demo" size="large" variant="outlined">
                 View demo bio page
               </Button>
+              <Button href="/login?returnTo=%2Fdashboard" size="large" variant="text">
+                Explore demo dashboard
+              </Button>
             </Stack>
           </Box>
 
