@@ -19,15 +19,22 @@ npm run db:seed
 npm run dev
 ```
 
-Dashboard access is closed-beta only. Before running the seed, fill every
-`BETA_OWNER_*`, `BETA_WIFE_*`, and wife organization variable in `.env` with
-your own values. The seed refuses partial configuration and does not print or
-store plaintext passwords. If those variables are left empty, it seeds only
+Dashboard access is closed-beta only. To create the shared showcase login,
+fill `DEMO_ACCOUNT_NAME`, `DEMO_ACCOUNT_EMAIL`, `DEMO_ACCOUNT_USERNAME`, and
+`DEMO_ACCOUNT_PASSWORD` in `.env` before running the seed. The account is
+linked to the seeded `36stories-demo` workspace, so visitors can use it to
+explore the dashboard without seeing private beta workspaces. The seed hashes
+the password and never prints or stores it in source control.
+
+The optional `BETA_OWNER_*`, `BETA_WIFE_*`, and wife organization variables
+provision private closed-beta accounts using the same seed. The seed refuses
+partial configuration. If all account variables are left empty, it seeds only
 the public demo content and no dashboard login is provisioned.
 
 Open [http://localhost:3000](http://localhost:3000), create an offer from the
 dashboard, and view the demo bio page at
 [http://localhost:3000/bio/36stories-demo](http://localhost:3000/bio/36stories-demo).
+The showcase dashboard login is at [http://localhost:3000/login](http://localhost:3000/login).
 
 Useful database commands:
 
@@ -101,10 +108,10 @@ deployed image. Railway's Git commit SHA is also used as the Next.js deployment
 ID to protect clients from version skew during deploys.
 
 After the first successful deploy, run `npm run db:seed` once from an operator
-shell after setting all beta variables in that shell. The seed never prints
-passwords and refuses partial configuration. Then verify `/api/health`, the
-public bio page, login, an offer view/click, and a waitlist signup. Do not expose
-the PostgreSQL public proxy for application traffic.
+shell after setting the showcase and/or beta variables in that shell. The seed
+never prints passwords and refuses partial configuration. Then verify
+`/api/health`, the public bio page, login, an offer view/click, and a waitlist
+signup. Do not expose the PostgreSQL public proxy for application traffic.
 
 The dashboard is username/password protected. Public Bio Pages and public
 offer pages remain unauthenticated, while their analytics and waitlist writes

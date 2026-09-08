@@ -31,8 +31,14 @@ type BetaUserConfig = {
   password: string;
 };
 
-function readBetaConfig() {
+function readProvisioningConfig() {
   const values = {
+    demo: {
+      name: process.env.DEMO_ACCOUNT_NAME,
+      email: process.env.DEMO_ACCOUNT_EMAIL,
+      username: process.env.DEMO_ACCOUNT_USERNAME,
+      password: process.env.DEMO_ACCOUNT_PASSWORD,
+    },
     owner: {
       name: process.env.BETA_OWNER_NAME,
       email: process.env.BETA_OWNER_EMAIL,
@@ -48,24 +54,41 @@ function readBetaConfig() {
     wifeOrganizationName: process.env.BETA_WIFE_ORGANIZATION_NAME,
     wifeOrganizationSlug: process.env.BETA_WIFE_ORGANIZATION_SLUG,
   };
-  const anyConfigured = Object.values(values.owner).some(Boolean) || Object.values(values.wife).some(Boolean) || Boolean(values.wifeOrganizationName || values.wifeOrganizationSlug);
-  if (!anyConfigured) return null;
-  const required = [...Object.entries(values.owner), ...Object.entries(values.wife), ["wifeOrganizationName", values.wifeOrganizationName], ["wifeOrganizationSlug", values.wifeOrganizationSlug]] as const;
-  const missing = required.filter(([, value]) => !value).map(([key]) => key);
-  if (missing.length) throw new Error(`Incomplete beta configuration. Missing: ${missing.join(", ")}`);
+  const demoConfigured = Object.values(values.demo).some(Boolean);
+  const betaConfigured = Object.values(values.owner).some(Boolean) || Object.values(values.wife).some(Boolean) || Boolean(values.wifeOrganizationName || values.wifeOrganizationSlug);
+  if (!demoConfigured && !betaConfigured) return { demo: null, beta: null };
+
+  if (demoConfigured) {
+    const missing = Object.entries(values.demo).filter(([, value]) => !value).map(([key]) => `DEMO_ACCOUNT_${key.toUpperCase()}`);
+    if (missing.length) throw new Error(`Incomplete demo account configuration. Missing: ${missing.join(", ")}`);
+  }
+
+  if (betaConfigured) {
+    const required = [...Object.entries(values.owner), ...Object.entries(values.wife), ["wifeOrganizationName", values.wifeOrganizationName], ["wifeOrganizationSlug", values.wifeOrganizationSlug]] as const;
+    const missing = required.filter(([, value]) => !value).map(([key]) => key);
+    if (missing.length) throw new Error(`Incomplete beta configuration. Missing: ${missing.join(", ")}`);
+  }
+
   const usernamePattern = /^[a-z0-9_]{3,30}$/;
-  if (!usernamePattern.test(values.owner.username!) || !usernamePattern.test(values.wife.username!)) throw new Error("Beta usernames must be 3-30 lowercase letters, numbers, or underscores.");
-  if (values.owner.username === values.wife.username) throw new Error("Beta usernames must be different.");
-  if (values.owner.email!.toLowerCase() === values.wife.email!.toLowerCase()) throw new Error("Beta email addresses must be different.");
-  if (![values.owner.email, values.wife.email].every((email) => /^\S+@\S+\.\S+$/.test(email!))) throw new Error("Beta email addresses must be valid.");
-  if ([values.owner.password, values.wife.password].some((password) => password!.length < 12 || password!.length > 128)) throw new Error("Beta passwords must be 12-128 characters.");
-  if (!/^[a-z0-9-]{3,63}$/.test(values.wifeOrganizationSlug!)) throw new Error("The wife's organization slug must be lowercase letters, numbers, and hyphens.");
-  if (values.wifeOrganizationSlug === "36stories-demo") throw new Error("The wife's organization slug must differ from 36stories-demo.");
+  const configuredUsers = [
+    ...(demoConfigured ? [values.demo] : []),
+    ...(betaConfigured ? [values.owner, values.wife] : []),
+  ] as const;
+  if (configuredUsers.some((user) => !usernamePattern.test(user.username!))) throw new Error("Usernames must be 3-30 lowercase letters, numbers, or underscores.");
+  if (new Set(configuredUsers.map((user) => user.username)).size !== configuredUsers.length) throw new Error("Configured usernames must be different.");
+  if (new Set(configuredUsers.map((user) => user.email!.toLowerCase())).size !== configuredUsers.length) throw new Error("Configured email addresses must be different.");
+  if (configuredUsers.some((user) => !/^\S+@\S+\.\S+$/.test(user.email!))) throw new Error("Configured email addresses must be valid.");
+  if (configuredUsers.some((user) => user.password!.length < 12 || user.password!.length > 128)) throw new Error("Passwords must be 12-128 characters.");
+  if (betaConfigured && !/^[a-z0-9-]{3,63}$/.test(values.wifeOrganizationSlug!)) throw new Error("The wife's organization slug must be lowercase letters, numbers, and hyphens.");
+  if (betaConfigured && values.wifeOrganizationSlug === "36stories-demo") throw new Error("The wife's organization slug must differ from 36stories-demo.");
   return {
-    owner: values.owner as BetaUserConfig,
-    wife: values.wife as BetaUserConfig,
-    wifeOrganizationName: values.wifeOrganizationName!,
-    wifeOrganizationSlug: values.wifeOrganizationSlug!,
+    demo: demoConfigured ? values.demo as BetaUserConfig : null,
+    beta: betaConfigured ? {
+      owner: values.owner as BetaUserConfig,
+      wife: values.wife as BetaUserConfig,
+      wifeOrganizationName: values.wifeOrganizationName!,
+      wifeOrganizationSlug: values.wifeOrganizationSlug!,
+    } : null,
   };
 }
 
@@ -91,7 +114,7 @@ async function provisionUser(config: BetaUserConfig, organizationId: string) {
 }
 
 async function main() {
-  const beta = readBetaConfig();
+  const provisioning = readProvisioningConfig();
   const organization = await prisma.organization.upsert({
     where: { slug: "36stories-demo" },
     update: { name: "36Stories Demo" },
@@ -535,7 +558,12 @@ async function main() {
     });
   }
 
-  if (beta) {
+  if (provisioning.demo) {
+    await provisionUser(provisioning.demo, organization.id);
+  }
+
+  if (provisioning.beta) {
+    const beta = provisioning.beta;
     await provisionUser(beta.owner, organization.id);
 
     const wifeOrganization = await prisma.organization.upsert({
